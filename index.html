@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>Rainbow Castle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap">
+<style>
+:root{
+  /* One-screen storybook world: full-bleed SVG scene, a castle-car parade float in the middle, toy buttons top-right */
+  --sky-day:#8FD3FF;
+  --sky-night:#1B1747;
+  --ink:#4A3F6B;
+  --btn:#FFFDF7;
+  --glow:#FFE66D;
+  --font-bubble:"Baloo 2","Arial Rounded MT Bold","Comic Sans MS",system-ui,sans-serif;
+  color-scheme: light;
+}
+html,body{height:100%}
+body{
+  margin:0;background:var(--sky-day);overflow:hidden;transition:background 1.2s;
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+}
+body.night{background:var(--sky-night)}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+
+.controls{
+  position:fixed;display:flex;gap:14px;
+  right:calc(env(safe-area-inset-right,0px) + 16px);
+  top:calc(env(safe-area-inset-top,0px) + 16px);
+}
+.btn{
+  width:72px;height:72px;border-radius:50%;padding:0;cursor:pointer;
+  border:4px solid var(--ink);background:var(--btn);color:var(--ink);
+  display:grid;place-items:center;box-shadow:0 6px 0 var(--ink);
+  transition:transform .1s, box-shadow .1s, background .3s;
+}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+.btn:focus-visible{outline:4px solid var(--btn);outline-offset:3px}
+.btn svg{width:38px;height:38px}
+#brushBtn{background:var(--current,#FF5A5F)}
+@media (max-width:520px){.btn{width:60px;height:60px}.btn svg{width:32px;height:32px}}
+@media (max-width:420px){.controls{gap:10px}.btn{width:52px;height:52px;border-width:3px}.btn svg{width:28px;height:28px}}
+@media (max-width:360px){
+  .turn{font-size:18px;gap:6px;padding:4px 12px 4px 5px;border-width:3px}
+  .turn svg{width:24px;height:24px}
+}
+
+/* whose turn: name badge with a ring that empties as the turn runs out */
+.turn{
+  position:fixed;top:calc(env(safe-area-inset-top,0px) + 16px);left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;padding:6px 18px 6px 8px;
+  background:var(--kid,#FF9BC8);border:4px solid var(--ink);border-radius:999px;box-shadow:0 6px 0 var(--ink);
+  font-family:var(--font-bubble);font-weight:700;font-size:28px;line-height:1;color:var(--ink);
+  pointer-events:none;transition:background .4s;
+}
+.turn svg{width:40px;height:40px;transform:rotate(-90deg)}
+.turn.pop{animation:turnPop .7s cubic-bezier(.3,1.8,.5,1)}
+@keyframes turnPop{0%{transform:translateX(-50%) scale(.4)}100%{transform:translateX(-50%) scale(1)}}
+@media (max-width:640px){
+  .turn{left:calc(env(safe-area-inset-left,0px) + 16px);transform:none;font-size:22px}
+  .turn svg{width:32px;height:32px}
+  @keyframes turnPop{0%{transform:scale(.4)}100%{transform:scale(1)}}
+}
+
+/* rainbow */
+.band{fill:none;cursor:pointer;animation:draw 1.1s ease-out backwards}
+.band.ping{animation:ping .4s ease-out}
+@keyframes draw{from{stroke-dasharray:100;stroke-dashoffset:100}to{stroke-dasharray:100;stroke-dashoffset:0}}
+@keyframes ping{0%{stroke-width:33}40%{stroke-width:46}100%{stroke-width:33}}
+
+/* paintable bits */
+.part{cursor:pointer;transition:fill .35s}
+.boing{animation:boing .4s ease-out;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes boing{0%{transform:scale(1)}35%{transform:scale(1.06,.94)}65%{transform:scale(.97,1.04)}100%{transform:scale(1)}}
+
+.window{cursor:pointer;fill:#5B5470;transition:fill .3s}
+.window.lit{fill:var(--glow);filter:url(#glow)}
+
+.wave{transform-box:fill-box;transform-origin:0 50%;animation:wave 1.6s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:skewY(0) scaleX(1)}50%{transform:skewY(7deg) scaleX(.86)}}
+
+/* sky */
+.drift{animation:drift linear infinite}
+@keyframes drift{from{transform:translateX(-320px)}to{transform:translateX(1320px)}}
+.cloud{cursor:pointer}
+.rays{transform-box:fill-box;transform-origin:center;animation:spin 24s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#orb{cursor:pointer}
+#sun{transition:opacity 1s, transform 1s}
+#moon,#nightSky,#stars{opacity:0;transition:opacity 1.2s}
+body.night #sun{opacity:0;transform:translateY(60px)}
+body.night #moon,body.night #nightSky,body.night #stars{opacity:1}
+body:not(.night) #stars{pointer-events:none}
+.twinkle{animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:1}50%{opacity:.35}}
+body:not(.night) .twinkle{animation:none}
+.starBtn{cursor:pointer}
+.zingT{transform-box:fill-box;transform-origin:center}
+.zing{animation:zing .6s cubic-bezier(.3,1.5,.5,1)}
+@keyframes zing{0%{transform:scale(1) rotate(0)}45%{transform:scale(2.4) rotate(72deg)}100%{transform:scale(1) rotate(144deg)}}
+
+/* flowers */
+.flower{cursor:pointer}
+.grow{transform-box:fill-box;transform-origin:50% 100%;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+.petals{transition:fill .35s}
+
+/* castle car */
+#car.driving #carBody{animation:bump .22s ease-in-out infinite}
+@keyframes bump{50%{transform:translateY(-6px)}}
+.wheelSpin{cursor:pointer;transform-box:fill-box;transform-origin:center}
+#car.driving .wheelSpin{animation:spin .4s linear infinite}
+#headlight{cursor:pointer;transition:fill .6s}
+body.night #headlight{fill:var(--glow);filter:url(#glow)}
+
+#door{cursor:pointer}
+#doorLeaf{transform-box:fill-box;transform-origin:0 50%;transition:transform .5s cubic-bezier(.5,1.6,.5,1)}
+#door.open #doorLeaf{transform:scaleX(.1)}
+#friend{transform-box:fill-box;transform-origin:50% 100%;transform:scale(0);transition:transform .45s .15s cubic-bezier(.3,1.8,.5,1)}
+#door.open #friend{transform:scale(1)}
+
+/* princess */
+#princess{cursor:pointer;transform-box:fill-box;transform-origin:50% 100%;transition:transform 1.4s ease-in-out, opacity .35s}
+#princess.gone{opacity:0;pointer-events:none}
+.sky{cursor:pointer}
+#birds{pointer-events:none}
+.flap{transform-box:fill-box;transform-origin:center;animation:flap .26s ease-in-out infinite alternate}
+@keyframes flap{to{transform:scaleY(-.5)}}
+#eyes{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+#mouthOpen{opacity:0;transform-box:fill-box;transform-origin:center}
+#princess.talking #smile{opacity:0}
+#princess.talking #mouthOpen{opacity:1;animation:chatter .16s ease-in-out infinite alternate}
+@keyframes chatter{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+#wandArm{transform-box:fill-box;transform-origin:0% 100%}
+#wandArm.waving{animation:waveArm .45s ease-in-out 4 alternate}
+@keyframes waveArm{to{transform:rotate(-28deg)}}
+
+#bubble{pointer-events:none;opacity:0;transition:opacity .25s}
+#bubble.show{opacity:1}
+#bubbleText{font-family:var(--font-bubble);font-size:28px;font-weight:700;fill:var(--ink)}
+
+#hint{pointer-events:none;transition:opacity .4s}
+#hint text{animation:bob 1s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(12px)}}
+
+@media (prefers-reduced-motion: reduce){
+  .band,.drift,.rays,.wave,.twinkle,#hint text,#car.driving #carBody,#eyes{animation:none}
+}
+</style>
+
+<svg id="scene" viewBox="0 0 1000 750" preserveAspectRatio="xMidYMid meet" role="img" aria-label="A rainbow over a princess riding a castle car on a green hill. Tap the rainbow to pick a colour, then tap the castle car to paint it. Tap the princess to hear her talk.">
+  <defs>
+    <linearGradient id="daySky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="600">
+      <stop offset="0" stop-color="#8FD3FF"/><stop offset="1" stop-color="#E3F5FF"/>
+    </linearGradient>
+    <linearGradient id="nightGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="600">
+      <stop offset="0" stop-color="#1B1747"/><stop offset="1" stop-color="#5A3E96"/>
+    </linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <mask id="crescent">
+      <circle cx="0" cy="0" r="48" fill="#fff"/>
+      <circle cx="22" cy="-14" r="42" fill="#000"/>
+    </mask>
+    <clipPath id="doorClip"><path d="M384 522 V486 A24 24 0 0 1 432 486 V522 Z"/></clipPath>
+  </defs>
+
+  <!-- sky -->
+  <rect class="sky" x="-3000" y="-3000" width="7000" height="3700" fill="url(#daySky)"/>
+  <rect class="sky" id="nightSky" x="-3000" y="-3000" width="7000" height="3700" fill="url(#nightGrad)"/>
+  <g id="stars"><g id="starDots"></g><g id="starField"></g></g>
+
+  <!-- sun / moon -->
+  <g id="orb" transform="translate(120 110)">
+    <g id="sun">
+      <g class="rays" fill="#FFC93C">
+        <path d="M-6 -86 L6 -86 L0 -64 Z"/><path d="M-6 86 L6 86 L0 64 Z"/>
+        <path d="M-86 -6 L-86 6 L-64 0 Z"/><path d="M86 -6 L86 6 L64 0 Z"/>
+        <path d="M-65 -56 L-56 -65 L-46 -46 Z"/><path d="M65 56 L56 65 L46 46 Z"/>
+        <path d="M65 -56 L56 -65 L46 -46 Z"/><path d="M-65 56 L-56 65 L-46 46 Z"/>
+      </g>
+      <circle r="52" fill="#FFD84D"/>
+      <circle cx="-18" cy="-6" r="5" fill="#4A3F6B"/><circle cx="18" cy="-6" r="5" fill="#4A3F6B"/>
+      <path d="M-18 14 Q0 30 18 14" fill="none" stroke="#4A3F6B" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="-30" cy="10" r="8" fill="#FF9E7A" opacity=".6"/><circle cx="30" cy="10" r="8" fill="#FF9E7A" opacity=".6"/>
+    </g>
+    <g id="moon">
+      <circle r="70" fill="#FFF6C9" opacity=".15"/>
+      <circle r="48" fill="#FFF6C9" mask="url(#crescent)"/>
+    </g>
+  </g>
+
+  <!-- clouds (behind rainbow) -->
+  <g class="drift" style="animation-duration:80s;animation-delay:-18s">
+    <g class="cloud" transform="translate(0 95)"><g class="puff" fill="#FFFFFF">
+      <ellipse cx="40" cy="12" rx="80" ry="24"/><circle cx="0" cy="0" r="32"/><circle cx="42" cy="-20" r="40"/><circle cx="84" cy="0" r="30"/>
+    </g></g>
+  </g>
+  <g class="drift" style="animation-duration:110s;animation-delay:-70s">
+    <g class="cloud" transform="translate(0 200) scale(.8)"><g class="puff" fill="#FFFFFF">
+      <ellipse cx="40" cy="12" rx="80" ry="24"/><circle cx="0" cy="0" r="32"/><circle cx="42" cy="-20" r="40"/><circle cx="84" cy="0" r="30"/>
+    </g></g>
+  </g>
+  <g class="drift" style="animation-duration:95s;animation-delay:-45s">
+    <g class="cloud" transform="translate(0 50) scale(.65)"><g class="puff" fill="#FFFFFF">
+      <ellipse cx="40" cy="12" rx="80" ry="24"/><circle cx="0" cy="0" r="32"/><circle cx="42" cy="-20" r="40"/><circle cx="84" cy="0" r="30"/>
+    </g></g>
+  </g>
+
+  <!-- rainbow -->
+  <g id="rainbow" stroke-width="33"></g>
+  <g id="birds"></g>
+
+  <!-- hills and road -->
+  <path d="M-3000 600 L-200 600 Q150 480 500 540 Q850 600 1200 520 L4000 520 L4000 4000 L-3000 4000 Z" fill="#8EDC6E"/>
+  <path d="M-3000 640 L0 640 Q500 520 1000 640 L4000 640 L4000 4000 L-3000 4000 Z" fill="#6CCB5F"/>
+  <rect x="-3000" y="628" width="7000" height="64" fill="#F2DFAE"/>
+  <line x1="-3000" y1="660" x2="4000" y2="660" stroke="#FFFFFF" stroke-width="6" stroke-dasharray="34 30" opacity=".8"/>
+  <g id="flowers"></g>
+
+  <!-- the castle car (faces right, wheels on the road at y=660) -->
+  <g id="car" style="transform:translateX(0px)">
+    <ellipse cx="505" cy="664" rx="250" ry="10" fill="#4A3F6B" opacity=".15"/>
+    <g id="carBody" stroke="#4A3F6B" stroke-width="4" stroke-linejoin="round">
+      <!-- back tower -->
+      <rect class="part" x="286" y="330" width="60" height="192" fill="#E6DDF0"/>
+      <polygon class="part" points="276,332 316,250 356,332" fill="#A9B3D6"/>
+      <line x1="316" y1="252" x2="316" y2="212"/>
+      <g class="wave"><polygon class="part" points="316,212 348,222 316,234" fill="#FFFFFF"/></g>
+      <!-- keep -->
+      <g class="part" fill="#F1EAF7">
+        <rect x="346" y="382" width="124" height="140"/>
+        <rect x="352" y="362" width="22" height="22"/><rect x="382" y="362" width="22" height="22"/>
+        <rect x="412" y="362" width="22" height="22"/><rect x="442" y="362" width="22" height="22"/>
+      </g>
+      <!-- front tower -->
+      <rect class="part" x="470" y="340" width="62" height="182" fill="#E6DDF0"/>
+      <polygon class="part" points="460,342 501,262 542,342" fill="#A9B3D6"/>
+      <line x1="501" y1="264" x2="501" y2="224"/>
+      <g class="wave" style="animation-delay:-.6s"><polygon class="part" points="501,224 533,234 501,246" fill="#FFFFFF"/></g>
+
+      <g id="bricks" stroke-width="3" stroke-linecap="round" opacity=".18" pointer-events="none"></g>
+
+      <path class="window" d="M300 404 V378 A16 16 0 0 1 332 378 V404 Z"/>
+      <path class="window" d="M485 412 V386 A16 16 0 0 1 517 386 V412 Z"/>
+      <path class="window" d="M394 434 V414 A14 14 0 0 1 422 414 V434 Z"/>
+
+      <g id="door">
+        <path d="M384 522 V486 A24 24 0 0 1 432 486 V522 Z" fill="#3A2E4F"/>
+        <g id="friend" stroke="none"><text x="408" y="518" font-size="34" text-anchor="middle">🦄</text></g>
+        <g id="doorLeaf">
+          <path d="M384 522 V486 A24 24 0 0 1 432 486 V522 Z" fill="#B97D48"/>
+          <g clip-path="url(#doorClip)" stroke-width="3" opacity=".5">
+            <line x1="400" y1="450" x2="400" y2="530"/><line x1="416" y1="450" x2="416" y2="530"/>
+          </g>
+          <circle cx="424" cy="504" r="4" fill="#FFD84D"/>
+        </g>
+      </g>
+
+      <!-- chassis -->
+      <rect class="part" x="266" y="516" width="476" height="96" rx="40" fill="#FF9BC8"/>
+      <g id="stripe" stroke="none" pointer-events="none"></g>
+      <path d="M318 556 a9 9 0 0 1 15 -6 a9 9 0 0 1 15 6 l-15 16 z" fill="#FFFFFF" stroke="none" pointer-events="none"/>
+      <path d="M680 556 a9 9 0 0 1 15 -6 a9 9 0 0 1 15 6 l-15 16 z" fill="#FFFFFF" stroke="none" pointer-events="none"/>
+      <rect x="742" y="578" width="14" height="24" rx="5" fill="#FFD84D"/>
+      <rect x="252" y="578" width="14" height="24" rx="5" fill="#FFD84D"/>
+      <circle id="headlight" cx="736" cy="546" r="12" fill="#FFF3B0"/>
+
+      <!-- princess, standing on the front deck -->
+      <g id="princess" stroke-width="3">
+        <path d="M600 360 Q594 406 606 420 L654 420 Q666 406 660 360 Z" fill="#7A4A2A"/>
+        <polyline points="619,404 602,432 597,446" fill="none" stroke-width="14" stroke-linecap="round"/>
+        <polyline points="619,404 602,432 597,446" fill="none" stroke="#F7CBA8" stroke-width="8" stroke-linecap="round"/>
+        <g id="wandArm">
+          <line x1="641" y1="404" x2="664" y2="378" stroke-width="14" stroke-linecap="round"/>
+          <line x1="641" y1="404" x2="664" y2="378" stroke="#F7CBA8" stroke-width="8" stroke-linecap="round"/>
+          <g id="wand">
+            <circle cx="676" cy="336" r="26" fill="transparent" stroke="none"/>
+            <line x1="664" y1="378" x2="676" y2="340" stroke="#FFD84D" stroke-width="5" stroke-linecap="round"/>
+            <g id="wandStar" class="zingT">
+              <path d="M678 322 L682 333 L693 334 L684 341 L687 352 L678 346 L669 352 L672 341 L663 334 L674 333 Z" fill="#FFD84D"/>
+            </g>
+          </g>
+        </g>
+        <g class="part" id="dress" fill="#FF7EB6">
+          <path d="M590 522 Q598 462 614 430 L646 430 Q662 462 670 522 Z"/>
+          <path d="M614 432 L646 432 L642 398 L618 398 Z"/>
+        </g>
+        <g fill="#FFFFFF" stroke="none" pointer-events="none" opacity=".8">
+          <circle cx="612" cy="490" r="4"/><circle cx="630" cy="470" r="4"/><circle cx="648" cy="490" r="4"/>
+          <circle cx="621" cy="508" r="3"/><circle cx="639" cy="508" r="3"/>
+        </g>
+        <rect x="625" y="384" width="10" height="16" fill="#F7CBA8"/>
+        <circle cx="630" cy="362" r="24" fill="#F7CBA8"/>
+        <path d="M606 358 Q608 334 630 334 Q652 334 654 358 Q642 346 630 350 Q618 346 606 358 Z" fill="#7A4A2A"/>
+        <polygon points="614,340 616,318 623,330 630,314 637,330 644,318 646,340" fill="#FFD84D"/>
+        <circle cx="630" cy="331" r="3.5" fill="#FF5A5F" stroke="none"/>
+        <g id="eyes" fill="#4A3F6B" stroke="none"><circle cx="621" cy="364" r="3.6"/><circle cx="639" cy="364" r="3.6"/></g>
+        <circle cx="614" cy="373" r="5" fill="#FF9EB5" stroke="none" opacity=".7"/>
+        <circle cx="646" cy="373" r="5" fill="#FF9EB5" stroke="none" opacity=".7"/>
+        <path id="smile" d="M622 375 Q630 383 638 375" fill="none" stroke-linecap="round"/>
+        <ellipse id="mouthOpen" cx="630" cy="378" rx="5" ry="5" fill="#B8436A" stroke="none"/>
+      </g>
+    </g>
+    <g id="wheels" stroke="#4A3F6B" stroke-width="4"></g>
+
+    <g id="bubble">
+      <rect id="bubbleBox" x="600" y="236" width="200" height="58" rx="29" fill="#FFFFFF" stroke="#4A3F6B" stroke-width="4"/>
+      <polygon points="636,291 660,291 644,320" fill="#FFFFFF" stroke="#4A3F6B" stroke-width="4" stroke-linejoin="round"/>
+      <rect x="638" y="286" width="20" height="8" fill="#FFFFFF"/>
+      <text id="bubbleText" x="624" y="275"></text>
+    </g>
+  </g>
+
+  <g id="hint"><text x="107" y="452" font-size="64" text-anchor="middle">👆</text></g>
+</svg>
+
+<canvas id="fx"></canvas>
+
+<div class="turn" id="turn" role="status" aria-live="polite">
+  <svg viewBox="0 0 40 40" aria-hidden="true">
+    <circle cx="20" cy="20" r="15" fill="#FFFDF7" stroke="#4A3F6B" stroke-width="4"/>
+    <circle id="turnRing" cx="20" cy="20" r="15" fill="none" stroke="#4A3F6B" stroke-width="8" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
+  </svg>
+  <span id="turnName">Avni</span>
+</div>
+
+<div class="controls">
+  <button class="btn" id="brushBtn" aria-label="Next colour">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#4A3F6B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M29 5 L35 11 L18 28 L12 22 Z" fill="#FFFDF7"/><path d="M12 22 C6 22 5 28 5 35 C12 35 18 34 18 28"/>
+    </svg>
+  </button>
+  <button class="btn" id="magicBtn" aria-label="Rainbow magic">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#4A3F6B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 34 L24 16"/><path d="M28 4 L30 10 L36 12 L30 14 L28 20 L26 14 L20 12 L26 10 Z" fill="#FFD84D"/>
+    </svg>
+  </button>
+  <button class="btn" id="resetBtn" aria-label="Start over">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#4A3F6B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M32 20 A12 12 0 1 1 27 10"/><path d="M28 4 L28 11 L21 11"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('scene');
+  const COLORS = ['#FF5A5F','#FF9F1C','#FFD93D','#6BCB77','#4D96FF','#6A5ACD','#C77DFF'];
+  const COLOR_NAMES = ['red','orange','yellow','green','blue','indigo','purple'];
+  const NOTES  = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.5, 1174.66]; // C major pentatonic, outer band lowest
+  const FRIENDS = [['🦄','unicorn'],['🐉','dragon'],['🐱','kitty'],['🐰','bunny'],['🦊','fox'],['🐻','bear'],['🧚','fairy'],['🐶','puppy']];
+  const HELLOS = [
+    'Hi, {k}!', "I'm Princess Carsi!", 'Tap my magic wand, {k}!', 'Do you like my car, {k}?',
+    'Paint my castle car!', 'Tap the wheels to go!', 'Tap the door, {k}!',
+    'Tap the sky for birdies!', 'Tap the sun for stars!', 'Tap the flowers, {k}!',
+    '{k}, you are wonderful!', 'I love you, {k}!'
+  ];
+  // turns: one child plays for a random 2–3 minutes, then the other
+  const KIDS = [{ name: 'Avni', color: '#FF9BC8' }, { name: 'Ansh', color: '#7CC4FF' }];
+  let turnIdx = Math.random() < 0.5 ? 0 : 1, turnTotal = 0, turnLeft = 0, turnStarted = false, warned = false;
+  const kid = () => KIDS[turnIdx].name;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  let current = 0, friendIdx = 0, hintStep = 0, helloIdx = 0, greeted = false;
+
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function starPath(r) {
+    let d = '';
+    for (let k = 0; k < 10; k++) {
+      const rr = k % 2 ? r * 0.45 : r, a = -Math.PI / 2 + k * Math.PI / 5;
+      d += (k ? 'L' : 'M') + (Math.cos(a) * rr).toFixed(1) + ' ' + (Math.sin(a) * rr).toFixed(1);
+    }
+    return d + 'Z';
+  }
+
+  // ---------- build scene ----------
+  const rainbow = document.getElementById('rainbow');
+  COLORS.forEach((c, i) => {
+    const r = 454 - i * 32;
+    const p = el('path', { d: `M${500 - r} 600 A${r} ${r} 0 0 1 ${500 + r} 600`, stroke: c, pathLength: 100, class: 'band' }, rainbow);
+    p.dataset.i = i;
+    p.style.animationDelay = (i * 0.12) + 's';
+  });
+
+  const starDots = document.getElementById('starDots');
+  for (let i = 0; i < 50; i++) {
+    const s = el('circle', { cx: rand(-400, 1400), cy: rand(-700, 450), r: rand(1.2, 2.6), fill: '#FFF6C9', class: 'twinkle', 'pointer-events': 'none' }, starDots);
+    s.style.animationDelay = -rand(0, 2.4) + 's';
+  }
+  const starField = document.getElementById('starField');
+  for (let i = 0; i < 26; i++) {
+    const x = rand(-300, 1300), y = i < 18 ? rand(20, 330) : rand(-500, 20);
+    if (x < 240 && y < 220) continue; // leave the moon alone
+    const g = el('g', { class: 'starBtn', transform: `translate(${x.toFixed(0)} ${y.toFixed(0)})` }, starField);
+    g.dataset.x = x;
+    el('circle', { r: 26, fill: 'transparent' }, g);
+    const z = el('g', { class: 'zingT' }, g);
+    const p = el('path', { d: starPath(rand(8, 13)), fill: '#FFF6C9', class: 'twinkle' }, z);
+    p.style.animationDelay = -rand(0, 2.4) + 's';
+  }
+
+  const flowersG = document.getElementById('flowers');
+  const flowers = [];
+  for (let i = 0; i < 10; i++) {
+    const x = 50 + i * 100, y = i % 2 ? 744 : 734;
+    const g = el('g', { class: 'flower', transform: `translate(${x} ${y})` }, flowersG);
+    g.dataset.i = i;
+    el('circle', { cx: 0, cy: -24, r: 30, fill: 'transparent' }, g);
+    const grow = el('g', { class: 'grow' }, g);
+    el('line', { x1: 0, y1: 0, x2: 0, y2: -26, stroke: '#3E9E4A', 'stroke-width': 4, 'stroke-linecap': 'round' }, grow);
+    el('ellipse', { cx: 7, cy: -12, rx: 7, ry: 3.5, fill: '#3E9E4A', transform: 'rotate(-30 7 -12)' }, grow);
+    const petals = el('g', { class: 'petals', fill: COLORS[(i * 3) % 7] }, grow);
+    for (let a = 0; a < 5; a++) el('circle', { cx: Math.cos(a * 1.2566) * 8, cy: -32 + Math.sin(a * 1.2566) * 8, r: 7 }, petals);
+    el('circle', { cx: 0, cy: -32, r: 5, fill: '#FFF6C9' }, grow);
+    flowers.push({ g, grow, petals, base: COLORS[(i * 3) % 7], scale: 1 });
+  }
+
+  const bricks = document.getElementById('bricks');
+  [[292, 420, 44, 90], [476, 425, 46, 80], [352, 440, 110, 30]].forEach(([x, y, w, h]) => {
+    for (let k = 0; k < 5; k++) {
+      const bx = x + Math.random() * (w - 18), by = y + Math.random() * h;
+      if (bx > 375 && bx < 435 && by > 470) continue; // keep the door clear
+      el('line', { x1: bx, y1: by, x2: bx + 14 + Math.random() * 8, y2: by }, bricks);
+    }
+  });
+
+  const stripe = document.getElementById('stripe');
+  COLORS.forEach((c, i) => el('rect', { x: 300, y: 582 + i * 3.4, width: 408, height: 3.6, fill: c }, stripe));
+
+  const wheels = document.getElementById('wheels');
+  [370, 640].forEach(cx => {
+    const g = el('g', { class: 'wheelSpin' }, wheels);
+    el('circle', { cx, cy: 618, r: 42, fill: '#FFD84D' }, g);
+    COLORS.slice(0, 6).forEach((c, k) => {
+      const a = k * Math.PI / 3;
+      el('line', { x1: cx, y1: 618, x2: cx + Math.cos(a) * 33, y2: 618 + Math.sin(a) * 33, stroke: c, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    });
+    el('circle', { cx, cy: 618, r: 10, fill: '#FF7EB6' }, g);
+  });
+
+  const parts = [...document.querySelectorAll('.part')];
+  const windows = [...document.querySelectorAll('.window')];
+  const door = document.getElementById('door');
+  const friend = document.querySelector('#friend text');
+  const hint = document.getElementById('hint');
+  const hintText = hint.querySelector('text');
+  const brushBtn = document.getElementById('brushBtn');
+  const car = document.getElementById('car');
+  const princess = document.getElementById('princess');
+  const dress = document.getElementById('dress');
+  const wandArm = document.getElementById('wandArm');
+  const bubble = document.getElementById('bubble');
+  const bubbleBox = document.getElementById('bubbleBox');
+  const bubbleText = document.getElementById('bubbleText');
+
+  // ---------- sound ----------
+  let ac, master;
+  function audio() {
+    if (!ac) {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      master = ac.createGain(); master.gain.value = 0.7; master.connect(ac.destination);
+    }
+    if (ac.state !== 'running') ac.resume().catch(() => {});
+    return ac;
+  }
+  function voice(freq, { dur = 1.1, vol = 0.22, type = 'sine', when = 0, slideTo } = {}) {
+    const a = audio(), t = a.currentTime + when;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur * 0.8);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(master); o.start(t); o.stop(t + dur + 0.05);
+  }
+  const bell = (f, when = 0) => { voice(f, { when }); voice(f * 4, { vol: 0.04, dur: 0.25, when }); };
+  const pop = () => voice(760, { dur: 0.16, vol: 0.3, slideTo: 200 });
+  const twinkle = () => { bell(1567.98); bell(2093, 0.08); };
+
+  // ---------- the princess talks ----------
+  let talking = false, lastSaid = 0, mouthTimer = 0, bubbleTimer = 0;
+  function pickVoice() {
+    const vs = speechSynthesis.getVoices();
+    const prefs = ['Samantha', 'Karen', 'Moira', 'Tessa', 'Google UK English Female', 'Google US English', 'Zira', 'Aria', 'Jenny', 'Female'];
+    for (const p of prefs) { const v = vs.find(v => v.name.includes(p)); if (v) return v; }
+    return vs.find(v => v.lang && v.lang.startsWith('en')) || null;
+  }
+  try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch (e) {}
+  function stopTalking() {
+    talking = false;
+    princess.classList.remove('talking');
+  }
+  function say(text) {
+    talking = true; lastSaid = Date.now();
+    bubbleText.textContent = text;
+    const w = bubbleText.getComputedTextLength() + 48;
+    const bx = Math.max(sceneLeft + 10, Math.min(600, sceneRight - 10 - w));
+    bubbleBox.setAttribute('x', bx); bubbleBox.setAttribute('width', w);
+    bubbleText.setAttribute('x', bx + 24);
+    bubble.classList.add('show');
+    princess.classList.add('talking');
+    wandArm.classList.remove('waving'); void wandArm.getBoundingClientRect(); wandArm.classList.add('waving');
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.pitch = 1.7; u.rate = 0.95; u.volume = 1;
+      const v = pickVoice(); if (v) u.voice = v;
+      u.onend = stopTalking;
+      // iOS Safari drops an utterance queued right after cancel(), so only cancel when busy and wait a beat
+      if (speechSynthesis.speaking || speechSynthesis.pending) {
+        speechSynthesis.cancel();
+        setTimeout(() => { try { speechSynthesis.speak(u); } catch (e) {} }, 80);
+      } else {
+        speechSynthesis.speak(u);
+      }
+    } catch (e) {}
+    clearTimeout(mouthTimer); clearTimeout(bubbleTimer);
+    mouthTimer = setTimeout(stopTalking, 700 + text.length * 75);
+    bubbleTimer = setTimeout(() => bubble.classList.remove('show'), 1800 + text.length * 80);
+  }
+  // iPhones only allow sound and speech to start from a touchend/click, not pointerdown
+  let speechUnlocked = false;
+  function unlock() {
+    audio();
+    if (speechUnlocked) return;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+      speechUnlocked = true;
+    } catch (e) {}
+  }
+  ['touchend', 'click'].forEach(t => addEventListener(t, unlock, { passive: true }));
+
+  // a comment only when she isn't already chatting
+  function chat(text, chance = 1, gap = 5000) {
+    if (talking || Date.now() - lastSaid < gap || Math.random() > chance) return;
+    say(text);
+  }
+  wandArm.addEventListener('animationend', () => wandArm.classList.remove('waving'));
+
+  // ---------- particles ----------
+  const fx = document.getElementById('fx'), ctx = fx.getContext('2d');
+  let bits = [];
+  function resize() {
+    const d = Math.min(devicePixelRatio || 1, 2);
+    fx.width = innerWidth * d; fx.height = innerHeight * d;
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+
+  // tall phone screens: zoom in on the castle car and tuck the sun inside the frame
+  let sceneLeft = 0, sceneRight = 1000, portrait = false;
+  const orb = document.getElementById('orb');
+  function fitScene() {
+    portrait = innerHeight > innerWidth * 1.1;
+    sceneLeft = portrait ? 235 : 0;
+    sceneRight = portrait ? 775 : 1000;
+    svg.setAttribute('viewBox', portrait ? '235 40 540 720' : '0 0 1000 750');
+    orb.setAttribute('transform', portrait ? 'translate(300 98) scale(.8)' : 'translate(120 110)');
+    if (hintStep === 0) {
+      hintText.setAttribute('x', portrait ? 275 : 107);
+      hintText.setAttribute('y', portrait ? 288 : 452);
+    }
+  }
+  addEventListener('resize', fitScene); fitScene();
+
+  function burst(x, y, colors, n = 16, speed = 5, gravity = 0.12) {
+    if (reduced) n = Math.ceil(n / 3);
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, s = speed * (0.4 + Math.random());
+      bits.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, g: gravity,
+        life: 1, decay: 0.014 + Math.random() * 0.018, size: 4 + Math.random() * 6,
+        color: colors[i % colors.length], shape: Math.random() < 0.55 ? 'star' : 'dot',
+        rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3 });
+    }
+  }
+  function rain(x, y) {
+    for (let i = 0; i < 16; i++) {
+      bits.push({ x: x + (Math.random() - 0.5) * 90, y: y + Math.random() * 20, vx: 0, vy: 2 + Math.random() * 2,
+        g: 0.22, life: 1, decay: 0.012, size: 5, color: '#7FC8FF', shape: 'drop', rot: 0, vr: 0 });
+    }
+  }
+  // emoji critters and treats; vy is signed (negative floats up)
+  function release(x, y, o) {
+    const n = reduced ? Math.ceil(o.n / 2) : o.n, sp = o.spread ?? 20, vx = o.vx ?? 1;
+    const [s0, s1] = o.size || [26, 36];
+    for (let i = 0; i < n; i++) {
+      bits.push({ x: x + rand(-sp, sp), y: y + rand(-10, 10), vx: rand(-vx, vx), vy: rand(o.vy[0], o.vy[1]),
+        g: o.g ?? 0, life: 1, decay: o.decay ?? 0.008, size: rand(s0, s1), shape: 'emoji',
+        ch: Array.isArray(o.ch) ? o.ch[i % o.ch.length] : o.ch, rot: rand(0, 6), vr: o.vr ?? 0.1, sw: o.sw ?? 14, color: '#000' });
+    }
+  }
+  function drawStar(x, y, r, rot) {
+    ctx.beginPath();
+    for (let k = 0; k < 8; k++) {
+      const rr = k % 2 ? r * 0.4 : r, a = rot + k * Math.PI / 4;
+      ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+  function drawHeart(x, y, s) {
+    ctx.beginPath();
+    ctx.arc(x - s / 2, y, s / 2, Math.PI, 0);
+    ctx.arc(x + s / 2, y, s / 2, Math.PI, 0);
+    ctx.lineTo(x, y + s * 1.1);
+    ctx.closePath(); ctx.fill();
+  }
+  (function tick() {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    bits = bits.filter(b => b.life > 0);
+    for (const b of bits) {
+      b.vy += b.g; b.x += b.vx; b.y += b.vy; b.vx *= 0.98; b.rot += b.vr; b.life -= b.decay;
+      ctx.globalAlpha = Math.max(0, b.life); ctx.fillStyle = b.color;
+      if (b.shape === 'star') drawStar(b.x, b.y, b.size * 1.4, b.rot);
+      else if (b.shape === 'heart') drawHeart(b.x, b.y, b.size * 1.3);
+      else if (b.shape === 'drop') { ctx.beginPath(); ctx.ellipse(b.x, b.y, b.size * 0.6, b.size * 1.3, 0, 0, Math.PI * 2); ctx.fill(); }
+      else if (b.shape === 'emoji') {
+        ctx.font = `${b.size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(b.ch, b.x + Math.sin(b.rot) * b.sw, b.y);
+      }
+      else { ctx.beginPath(); ctx.arc(b.x, b.y, b.size * 0.7, 0, Math.PI * 2); ctx.fill(); }
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  })();
+
+  function toScreen(x, y) {
+    const p = svg.createSVGPoint(); p.x = x; p.y = y;
+    return p.matrixTransform(svg.getScreenCTM());
+  }
+  function centerOf(node) {
+    const r = node.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+  function replay(node, cls) {
+    node.classList.remove(cls); void node.getBoundingClientRect(); node.classList.add(cls);
+  }
+  document.addEventListener('animationend', e => {
+    const c = e.target.classList;
+    if (!c) return;
+    c.remove('boing', 'zing');
+    if (e.animationName === 'ping') c.remove('ping');
+  });
+
+  // ---------- actions ----------
+  function setColor(i) {
+    current = i;
+    brushBtn.style.setProperty('--current', COLORS[i]);
+  }
+  function pickBand(i, x, y) {
+    setColor(i);
+    replay(rainbow.children[i], 'ping');
+    bell(NOTES[i]);
+    burst(x, y, [COLORS[i], '#FFFFFF'], 10, 4);
+    if (hintStep === 0) {
+      hintStep = 1;
+      hintText.setAttribute('x', 316); hintText.setAttribute('y', 512);
+    }
+  }
+  function paint(part, x, y, color = COLORS[current], quiet = false) {
+    part.style.fill = color;
+    replay(part, 'boing');
+    if (!quiet) pop();
+    burst(x, y, [color, '#FFFFFF'], 14, 5);
+    if (hintStep === 1) { hintStep = 2; hint.style.opacity = 0; }
+  }
+  // each wand tap casts the next spell
+  const wandStar = document.getElementById('wandStar');
+  const SPELLS = [
+    ['Sparkle snow!', () => release(innerWidth / 2, -40, { ch: '❄️', n: 36, spread: innerWidth / 2, vy: [1, 2.2], vx: 0.5, g: 0.01, decay: 0.004, sw: 20, vr: 0.05 })],
+    ['Bubbles, bubbles!', c => release(c.x, c.y, { ch: '🫧', n: 16, vy: [-2.6, -1], vx: 2.5, g: -0.01, decay: 0.006, size: [28, 50], sw: 18 })],
+    ['Raining hearts!', () => release(innerWidth / 2, -40, { ch: ['💖', '💗', '💜'], n: 30, spread: innerWidth / 2, vy: [1.2, 2.4], vx: 0.5, g: 0.01, decay: 0.005, sw: 12 })],
+    ['Grow, flowers, grow!', () => flowers.forEach((fl, k) => setTimeout(() => {
+      fl.scale = 2; fl.grow.style.transform = 'scale(2)'; bell(NOTES[k % 7]);
+    }, k * 120))],
+    ['Birdies, come here!', () => { addBirds(rand(200, 450), rand(120, 260)); addBirds(rand(550, 850), rand(120, 260)); }],
+    ['Starry fireworks!', () => {
+      for (let k = 0; k < 6; k++) setTimeout(() => {
+        const p = toScreen(rand(180, 820), rand(80, 260));
+        burst(p.x, p.y, COLORS, 40, 7, 0.06);
+        voice(300, { dur: 0.5, vol: 0.12, type: 'triangle', slideTo: 1400 });
+      }, k * 260);
+    }],
+    ['Butterflies, fly!', c => release(c.x, c.y, { ch: '🦋', n: 10, vy: [-2.4, -1], vx: 3, decay: 0.005, sw: 22 })]
+  ];
+  let spellIdx = 0;
+  function castSpell() {
+    const [words, spell] = SPELLS[spellIdx++ % SPELLS.length];
+    replay(wandStar, 'zing');
+    const c = centerOf(wandStar);
+    for (let k = 0; k < 18; k++) {
+      bits.push({ x: c.x, y: c.y, vx: rand(-1, 1), vy: -k * 0.5, g: 0.02, life: 1, decay: 0.02, size: rand(4, 8),
+        color: COLORS[k % 7], shape: 'star', rot: 0, vr: 0.2 });
+    }
+    NOTES.forEach((f, k) => bell(f * 2, k * 0.05));
+    say(words);
+    setTimeout(() => spell(c), 250);
+  }
+
+  function tapPrincess(target, x, y) {
+    if (target.closest('#wand')) return castSpell();
+    if (target.closest('#dress')) {
+      paint(dress, x, y);
+      say(`My ${COLOR_NAMES[current]} dress!`);
+      return;
+    }
+    twinkle();
+    burst(x, y - 30, ['#FFD84D', '#FF9BC8', '#FFFFFF'], 14, 4);
+    say(HELLOS[helloIdx++ % HELLOS.length].replace('{k}', kid()));
+  }
+  function toggleWindow(w, x, y) {
+    w.classList.toggle('lit');
+    twinkle();
+    burst(x, y, ['#FFE66D', '#FFFFFF'], 12, 3.5, 0.05);
+  }
+  // the princess walks into the castle, lights it up, and comes back out with a friend
+  let visiting = false;
+  const thunk = () => voice(220, { dur: 0.25, vol: 0.3, type: 'triangle', slideTo: 110 });
+  const chime = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, k) => bell(f, k * 0.09));
+  function toggleDoor() {
+    if (visiting || drivePhase) return;
+    if (door.classList.contains('open')) { door.classList.remove('open'); thunk(); return; }
+    visiting = true;
+    const [ch, name] = FRIENDS[friendIdx++ % FRIENDS.length];
+    friend.textContent = '';
+    door.classList.add('open');
+    chime();
+    const who = kid();
+    say(`Come inside, ${who}!`);
+    setTimeout(() => { princess.style.transform = 'translateX(-232px) scale(.3)'; }, 500);
+    setTimeout(() => princess.classList.add('gone'), 1700);
+    setTimeout(() => {
+      door.classList.remove('open'); thunk();
+      windows.forEach((w, k) => setTimeout(() => { w.classList.add('lit'); bell(NOTES[k + 2] * 2); }, 300 + k * 380));
+    }, 2000);
+    setTimeout(() => {
+      friend.textContent = ch;
+      door.classList.add('open'); chime();
+      princess.classList.remove('gone');
+    }, 3900);
+    setTimeout(() => {
+      princess.style.transform = '';
+      const c = centerOf(door);
+      burst(c.x, c.y, COLORS, 22, 5);
+      say(`Look, ${who}! A little ${name}!`);
+    }, 4300);
+    setTimeout(() => {
+      visiting = false;
+      if (!document.body.classList.contains('night')) windows.forEach(w => w.classList.remove('lit'));
+    }, 5900);
+  }
+
+  // birds: a little flock flutters around where you tapped, then flies away
+  const birdsG = document.getElementById('birds');
+  let birds = [], birdsFlying = false;
+  function addBirds(cx, cy) {
+    if (birds.length > 40) return;
+    const dir = Math.random() < 0.5 ? -1 : 1, n = 3 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      const g = el('g', {}, birdsG);
+      const c = COLORS[Math.floor(Math.random() * COLORS.length)];
+      const wing = el('g', { class: 'flap' }, g);
+      wing.style.animationDelay = -rand(0, 0.26) + 's';
+      el('path', { d: 'M-18 0 Q-9 -12 0 0 Q9 -12 18 0', fill: 'none', stroke: c, 'stroke-width': 5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, wing);
+      el('circle', { r: 4.5, fill: c }, g);
+      birds.push({ g, x: cx + rand(-20, 20), y: cy + rand(-15, 15), ax: cx + rand(-60, 60), ay: cy + rand(-30, 30),
+        phase: rand(0, 6), born: performance.now(), stay: rand(3500, 5500), dir, vx: 0, vy: 0, s: rand(0.8, 1.3) });
+    }
+    for (let k = 0; k < 4; k++) voice(rand(2200, 2800), { dur: 0.09, vol: 0.12, slideTo: 3400, when: k * 0.11 });
+    chat('Tweet tweet! Birdies!', 0.6);
+    if (!birdsFlying) { birdsFlying = true; requestAnimationFrame(flyBirds); }
+  }
+  function flyBirds(now) {
+    birds = birds.filter(b => {
+      if (now - b.born < b.stay) {
+        b.phase += 0.03;
+        b.x += (b.ax + Math.cos(b.phase) * 70 - b.x) * 0.04;
+        b.y += (b.ay + Math.sin(b.phase * 1.3) * 30 - b.y) * 0.04;
+      } else {
+        b.vx += 0.22 * b.dir; b.vy -= 0.1;
+        b.x += b.vx; b.y += b.vy;
+      }
+      b.g.setAttribute('transform', `translate(${b.x.toFixed(1)} ${b.y.toFixed(1)}) scale(${b.s})`);
+      if (b.y < -1500 || b.x < -1500 || b.x > 2500) { b.g.remove(); return false; }
+      return true;
+    });
+    if (birds.length) requestAnimationFrame(flyBirds); else birdsFlying = false;
+  }
+  function toSvg(x, y) {
+    const p = svg.createSVGPoint(); p.x = x; p.y = y;
+    return p.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  function toggleNight() {
+    const night = document.body.classList.toggle('night');
+    windows.forEach(w => w.classList.toggle('lit', night));
+    const scale = night ? [...NOTES].reverse() : NOTES;
+    scale.forEach((f, k) => bell(f / (night ? 2 : 1), k * 0.07));
+    say(night ? 'Tap the stars!' : 'Good morning, sunshine!');
+  }
+  function cloudRain(cloud, x, y) {
+    replay(cloud.querySelector('.puff'), 'boing');
+    rain(x, y + 20);
+    for (let k = 0; k < 4; k++) bell(NOTES[Math.floor(Math.random() * NOTES.length)] * 1.5, k * 0.12);
+    chat('Pitter patter, rain!', 0.5);
+  }
+  function tapStar(star, x, y) {
+    replay(star.querySelector('.zingT'), 'zing');
+    const i = Math.max(0, Math.min(6, Math.floor((+star.dataset.x + 300) / 1600 * 7)));
+    bell(NOTES[i] * 2);
+    burst(x, y, ['#FFF6C9', '#FFE66D', '#C77DFF'], 12, 3.5, 0.04);
+    chat('Twinkle, twinkle!', 0.5);
+  }
+  // every flower has its own surprise inside
+  const FLOWER_GIFTS = [
+    ['A butterfly!', { ch: '🦋', n: 3, vy: [-2.4, -1.6], sw: 16, decay: 0.006 }],
+    ['Buzz buzz! A bee!', { ch: '🐝', n: 2, vy: [-1.5, -1], vx: 3, sw: 30, vr: 0.4, decay: 0.006 }],
+    ['A ladybug!', { ch: '🐞', n: 3, vy: [-1.2, -0.6], sw: 6, size: [20, 28] }],
+    ['A balloon!', { ch: '🎈', n: 1, vy: [-1.4, -1.1], sw: 6, vr: 0.05, decay: 0.004, size: [46, 54] }],
+    ['Love hearts!', { ch: '💖', n: 6, vy: [-3, -1.5], vx: 2, sw: 10, decay: 0.01 }],
+    ['Shiny stars!', { ch: '⭐', n: 6, vy: [-5, -2.5], vx: 3, g: 0.08, sw: 0, decay: 0.012 }],
+    ['La la la!', { ch: ['🎵', '🎶'], n: 4, vy: [-2.2, -1.2], vx: 1.5, sw: 12 }, () => [0, 2, 4, 2, 0].forEach((n, k) => bell(NOTES[n], k * 0.15))],
+    ['Pretty petals!', { ch: '🌸', n: 8, vy: [-4, -2], vx: 3, g: 0.06, sw: 18, size: [18, 26], decay: 0.01 }],
+    ['Bubbles!', { ch: '🫧', n: 6, vy: [-2, -1], vx: 1.5, sw: 18, size: [26, 44], decay: 0.006 }],
+    ['A tiny fairy!', { ch: '🧚', n: 1, vy: [-2, -1.6], sw: 24, vr: 0.08, decay: 0.005, size: [42, 48] }]
+  ];
+  function tapFlower(fl, x, y) {
+    const i = +fl.g.dataset.i;
+    const [words, gift, extra] = FLOWER_GIFTS[i];
+    fl.petals.style.fill = COLORS[current];
+    fl.scale = fl.scale >= 2 ? 1 : fl.scale + 0.25;
+    fl.grow.style.transform = `scale(${fl.scale})`;
+    if (extra) extra(); else bell(NOTES[i % 7]);
+    burst(x, y, [COLORS[current], '#FFFFFF'], 10, 3.5);
+    release(x, y - 20, gift);
+    chat(words, 0.8, 2500);
+  }
+
+  // drive off one side and come back around the other
+  let drivePhase = 0, trailTimer = 0;
+  function horn() {
+    voice(659.25, { dur: 0.18, vol: 0.25, type: 'triangle' });
+    voice(783.99, { dur: 0.22, vol: 0.25, type: 'triangle', when: 0.2 });
+  }
+  function driveCar() {
+    if (drivePhase || visiting) return;
+    drivePhase = 1;
+    car.classList.add('driving');
+    horn();
+    say('Here we go!');
+    setTimeout(() => {
+      car.style.transition = 'transform 1.5s cubic-bezier(.5,0,.9,.6)';
+      car.style.transform = 'translateX(1150px)';
+    }, 450);
+    trailTimer = setInterval(() => {
+      const r = car.getBoundingClientRect();
+      bits.push({ x: r.left + r.width * 0.05, y: r.top + r.height * 0.75, vx: -rand(0.5, 2), vy: -rand(0.5, 2),
+        g: -0.02, life: 1, decay: 0.02, size: rand(5, 9),
+        color: COLORS[Math.floor(Math.random() * COLORS.length)], shape: 'heart', rot: 0, vr: 0 });
+    }, reduced ? 240 : 60);
+  }
+  car.addEventListener('transitionend', e => {
+    if (e.target !== car || e.propertyName !== 'transform') return;
+    if (drivePhase === 1) {
+      drivePhase = 2;
+      car.style.transition = 'none';
+      car.style.transform = 'translateX(-1150px)';
+      void car.getBoundingClientRect();
+      car.style.transition = 'transform 1.8s cubic-bezier(.2,.6,.3,1)';
+      car.style.transform = 'translateX(0px)';
+    } else if (drivePhase === 2) {
+      drivePhase = 0;
+      clearInterval(trailTimer);
+      car.classList.remove('driving');
+      [783.99, 987.77, 1174.66, 1567.98].forEach((f, k) => bell(f, k * 0.08));
+      const c = centerOf(princess);
+      burst(c.x, c.y - 40, ['#FF9BC8', '#FFD84D', '#FFFFFF'], 20, 4);
+      say('Wheee! That was fun!');
+    }
+  });
+
+  function magic() {
+    audio();
+    say('Rainbow magic!');
+    const order = [...parts].sort(() => Math.random() - 0.5);
+    order.forEach((p, k) => setTimeout(() => {
+      const c = centerOf(p);
+      paint(p, c.x, c.y, COLORS[k % COLORS.length], true);
+      bell(NOTES[k % NOTES.length]);
+    }, k * 120));
+    flowers.forEach((fl, k) => setTimeout(() => { fl.petals.style.fill = COLORS[k % 7]; }, k * 80));
+    const done = order.length * 120;
+    for (let k = 0; k < 6; k++) setTimeout(() => {
+      const c = toScreen(220 + Math.random() * 560, 90 + Math.random() * 170);
+      burst(c.x, c.y, COLORS, 40, 7, 0.06);
+      voice(300, { dur: 0.5, vol: 0.12, type: 'triangle', slideTo: 1400 });
+    }, done + k * 260);
+    if (hintStep < 2) { hintStep = 2; hint.style.opacity = 0; }
+  }
+  function reset() {
+    audio();
+    parts.forEach(p => { p.style.fill = ''; });
+    windows.forEach(w => w.classList.remove('lit'));
+    flowers.forEach(fl => { fl.scale = 1; fl.grow.style.transform = ''; fl.petals.style.fill = ''; });
+    door.classList.remove('open');
+    document.body.classList.remove('night');
+    [...NOTES].reverse().forEach((f, k) => bell(f / 2, k * 0.06));
+    say("Let's paint again!");
+  }
+
+  // ---------- input: tap, or drag a finger across the rainbow, stars and flowers ----------
+  let dragging = false, last = null;
+  function hit(target, x, y, isDown) {
+    const band = target.closest('.band');
+    const star = target.closest('.starBtn');
+    const flowerG = target.closest('.flower');
+    const part = target.closest('.part');
+    const key = band || star || flowerG || part;
+    const fresh = key !== last;
+    last = key;
+
+    if (band) { if (fresh) pickBand(+band.dataset.i, x, y); return; }
+    if (star) { if (fresh) tapStar(star, x, y); return; }
+    if (flowerG) { if (fresh) tapFlower(flowers[+flowerG.dataset.i], x, y); return; }
+    if (target.closest('#princess')) {
+      if (isDown) tapPrincess(target, x, y);
+      else if (part && fresh) paint(part, x, y);
+      return;
+    }
+    if (part) { if (fresh) paint(part, x, y); return; }
+    if (!isDown) return;
+    if (target.closest('.wheelSpin') || target.closest('#headlight')) return driveCar();
+    const w = target.closest('.window'); if (w) return toggleWindow(w, x, y);
+    if (target.closest('#door')) return toggleDoor();
+    if (target.closest('#orb')) return toggleNight();
+    const cloud = target.closest('.cloud'); if (cloud) return cloudRain(cloud, x, y);
+    if (target.classList.contains('sky')) { const p = toSvg(x, y); addBirds(p.x, p.y); }
+  }
+  svg.addEventListener('pointerdown', e => {
+    audio();
+    dragging = true; last = null;
+    hit(e.target, e.clientX, e.clientY, true);
+    if (!greeted) {
+      greeted = true;
+      if (!talking) setTimeout(() => chat(`Hi ${kid()}! It's your turn!`), 500);
+    }
+    turnStarted = true;
+  });
+  addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const t = document.elementFromPoint(e.clientX, e.clientY);
+    if (t && svg.contains(t)) hit(t, e.clientX, e.clientY, false);
+  });
+  ['pointerup', 'pointercancel'].forEach(t => addEventListener(t, () => { dragging = false; }));
+
+  brushBtn.addEventListener('click', () => {
+    const i = (current + 1) % COLORS.length;
+    const b = rainbow.children[i].getBoundingClientRect();
+    pickBand(i, b.left + b.width / 2, b.top + 10);
+  });
+  document.getElementById('magicBtn').addEventListener('click', magic);
+  document.getElementById('resetBtn').addEventListener('click', reset);
+
+  const turnBadge = document.getElementById('turn');
+  const turnName = document.getElementById('turnName');
+  const turnRing = document.getElementById('turnRing');
+  function showTurn() {
+    turnName.textContent = KIDS[turnIdx].name;
+    turnBadge.style.setProperty('--kid', KIDS[turnIdx].color);
+    turnRing.setAttribute('stroke-dashoffset', 0);
+    turnTotal = turnLeft = Math.round(rand(120, 180));
+    warned = false;
+  }
+  function switchTurn() {
+    turnIdx = 1 - turnIdx;
+    showTurn();
+    replay(turnBadge, 'pop');
+    const r = turnBadge.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.bottom, [KIDS[turnIdx].color, ...COLORS], 40, 7, 0.1);
+    [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((f, k) => bell(f, k * 0.12));
+    say(`Time to switch! ${kid()}'s turn!`);
+  }
+  setInterval(() => {
+    if (!turnStarted || document.hidden) return;
+    turnLeft--;
+    turnRing.setAttribute('stroke-dashoffset', (100 * (1 - turnLeft / turnTotal)).toFixed(1));
+    if (turnLeft === 15 && !warned) { warned = true; say(`Almost time, ${kid()}!`); }
+    if (turnLeft <= 0) switchTurn();
+  }, 1000);
+  showTurn();
+
+  setColor(0);
+})();
+</script>
+
+</html>
