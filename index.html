@@ -519,8 +519,10 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
       u.pitch = 1.7; u.rate = 0.95; u.volume = 1;
       const v = pickVoice(); if (v) u.voice = v;
       u.onend = stopTalking;
+      // until a touchend/click has spoken real words iOS stays silent, so unlock() speaks this line
+      if (!speechUnlocked) pendingSpeech = u;
       // iOS Safari drops an utterance queued right after cancel(), so only cancel when busy and wait a beat
-      if (speechSynthesis.speaking || speechSynthesis.pending) {
+      else if (speechSynthesis.speaking || speechSynthesis.pending) {
         speechSynthesis.cancel();
         setTimeout(() => { try { speechSynthesis.speak(u); } catch (e) {} }, 80);
       } else {
@@ -531,16 +533,15 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
     mouthTimer = setTimeout(stopTalking, 700 + text.length * 75);
     bubbleTimer = setTimeout(() => bubble.classList.remove('show'), 1800 + text.length * 80);
   }
-  // iPhones only allow sound and speech to start from a touchend/click, not pointerdown
-  let speechUnlocked = false;
+  // iPhones only allow sound and speech to start from a touchend/click, not pointerdown,
+  // and a silent blank utterance doesn't count, so the first real line is spoken from here
+  let speechUnlocked = false, pendingSpeech = null;
   function unlock() {
     audio();
-    if (speechUnlocked) return;
+    if (speechUnlocked || !pendingSpeech) return;
     try {
-      const u = new SpeechSynthesisUtterance(' ');
-      u.volume = 0;
-      speechSynthesis.speak(u);
-      speechUnlocked = true;
+      speechSynthesis.speak(pendingSpeech);
+      speechUnlocked = true; pendingSpeech = null;
     } catch (e) {}
   }
   ['touchend', 'click'].forEach(t => addEventListener(t, unlock, { passive: true }));
@@ -956,7 +957,8 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
     hit(e.target, e.clientX, e.clientY, true);
     if (!greeted) {
       greeted = true;
-      if (!talking) setTimeout(() => chat(`Hi ${kid()}! It's your turn!`), 500);
+      // greet within the tap so its touchend can speak it on iOS
+      if (!talking) chat(`Hi ${kid()}! It's your turn!`);
     }
     turnStarted = true;
   });
