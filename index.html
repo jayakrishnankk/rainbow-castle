@@ -120,8 +120,7 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
 #door{cursor:pointer}
 #doorLeaf{transform-box:fill-box;transform-origin:0 50%;transition:transform .5s cubic-bezier(.5,1.6,.5,1)}
 #door.open #doorLeaf{transform:scaleX(.1)}
-#friend{transform-box:fill-box;transform-origin:50% 100%;transform:scale(0);transition:transform .45s .15s cubic-bezier(.3,1.8,.5,1)}
-#door.open #friend{transform:scale(1)}
+body.leaving{opacity:0;transition:opacity .6s}
 
 /* princess */
 #princess{cursor:pointer;transform-box:fill-box;transform-origin:50% 100%;transition:transform 1.4s ease-in-out, opacity .35s}
@@ -254,7 +253,6 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
 
       <g id="door">
         <path d="M384 522 V486 A24 24 0 0 1 432 486 V522 Z" fill="#3A2E4F"/>
-        <g id="friend" stroke="none"><text x="408" y="518" font-size="34" text-anchor="middle">🦄</text></g>
         <g id="doorLeaf">
           <path d="M384 522 V486 A24 24 0 0 1 432 486 V522 Z" fill="#B97D48"/>
           <g clip-path="url(#doorClip)" stroke-width="3" opacity=".5">
@@ -357,20 +355,23 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
   const COLORS = ['#FF5A5F','#FF9F1C','#FFD93D','#6BCB77','#4D96FF','#6A5ACD','#C77DFF'];
   const COLOR_NAMES = ['red','orange','yellow','green','blue','indigo','purple'];
   const NOTES  = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.5, 1174.66]; // C major pentatonic, outer band lowest
-  const FRIENDS = [['🦄','unicorn'],['🐉','dragon'],['🐱','kitty'],['🐰','bunny'],['🦊','fox'],['🐻','bear'],['🧚','fairy'],['🐶','puppy']];
   const HELLOS = [
     'Hi, {k}!', "I'm Princess Carsi!", 'Tap my magic wand, {k}!', 'Do you like my car, {k}?',
     'Paint my castle car!', 'Tap the wheels to go!', 'Tap the door, {k}!',
     'Tap the sky for birdies!', 'Tap the sun for stars!', 'Tap the flowers, {k}!',
-    '{k}, you are wonderful!', 'I love you, {k}!'
+    '{k}, you keep trying new things!', 'I love you, {k}!'
   ];
-  // turns: one child plays for a random 2–3 minutes, then the other
+  // turns: one child plays for a random 3–5 minutes, then the other. A parent can set "only Avni" or
+  // "only Ansh" for this device (held in localStorage, see shared/turns.js and shared/players.js);
+  // then that child always plays and there is no timer.
+  let solo = null;
+  try { const v = localStorage.getItem('rainbowCastle.players.v1'); if (v === '0' || v === '1') solo = +v; } catch (e) {}
   const KIDS = [{ name: 'Avni', color: '#FF9BC8' }, { name: 'Ansh', color: '#7CC4FF' }];
-  let turnIdx = Math.random() < 0.5 ? 0 : 1, turnTotal = 0, turnLeft = 0, turnStarted = false, warned = false;
+  let turnIdx = solo !== null ? solo : /[?&]turn=1\b/.test(location.search) ? 1 : /[?&]turn=0\b/.test(location.search) ? 0 : (Math.random() < 0.5 ? 0 : 1), turnTotal = 0, turnLeft = 0, turnStarted = false, warned = false;
   const kid = () => KIDS[turnIdx].name;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rand = (a, b) => a + Math.random() * (b - a);
-  let current = 0, friendIdx = 0, hintStep = 0, helloIdx = 0, greeted = false;
+  let current = 0, hintStep = 0, helloIdx = 0, greeted = false;
 
   function el(tag, attrs, parent) {
     const e = document.createElementNS(NS, tag);
@@ -455,7 +456,6 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
   const parts = [...document.querySelectorAll('.part')];
   const windows = [...document.querySelectorAll('.window')];
   const door = document.getElementById('door');
-  const friend = document.querySelector('#friend text');
   const hint = document.getElementById('hint');
   const hintText = hint.querySelector('text');
   const brushBtn = document.getElementById('brushBtn');
@@ -729,42 +729,35 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
     twinkle();
     burst(x, y, ['#FFE66D', '#FFFFFF'], 12, 3.5, 0.05);
   }
-  // the princess walks into the castle, lights it up, and comes back out with a friend
+  // the princess walks into the castle, the windows light up, and we follow her inside to the
+  // swimming pool (worlds/castle/pool/). The turn travels along in the URL (?turn=0|1).
   let visiting = false;
   const thunk = () => voice(220, { dur: 0.25, vol: 0.3, type: 'triangle', slideTo: 110 });
   const chime = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, k) => bell(f, k * 0.09));
   function toggleDoor() {
     if (visiting || drivePhase) return;
-    if (door.classList.contains('open')) { door.classList.remove('open'); thunk(); return; }
     visiting = true;
-    const [ch, name] = FRIENDS[friendIdx++ % FRIENDS.length];
-    friend.textContent = '';
     door.classList.add('open');
     chime();
-    const who = kid();
-    say(`Come inside, ${who}!`);
+    say(`Come inside, ${kid()}!`);
     setTimeout(() => { princess.style.transform = 'translateX(-232px) scale(.3)'; }, 500);
     setTimeout(() => princess.classList.add('gone'), 1700);
     setTimeout(() => {
       door.classList.remove('open'); thunk();
-      windows.forEach((w, k) => setTimeout(() => { w.classList.add('lit'); bell(NOTES[k + 2] * 2); }, 300 + k * 380));
+      windows.forEach((w, k) => setTimeout(() => { w.classList.add('lit'); bell(NOTES[k + 2] * 2); }, 200 + k * 250));
     }, 2000);
-    setTimeout(() => {
-      friend.textContent = ch;
-      door.classList.add('open'); chime();
-      princess.classList.remove('gone');
-    }, 3900);
-    setTimeout(() => {
-      princess.style.transform = '';
-      const c = centerOf(door);
-      burst(c.x, c.y, COLORS, 22, 5);
-      say(`Look, ${who}! A little ${name}!`);
-    }, 4300);
-    setTimeout(() => {
-      visiting = false;
-      if (!document.body.classList.contains('night')) windows.forEach(w => w.classList.remove('lit'));
-    }, 5900);
+    setTimeout(() => { document.body.classList.add('leaving'); }, 3100);
+    setTimeout(() => { location.href = 'worlds/castle/pool/index.html?turn=' + turnIdx; }, 3700);
   }
+  // coming back with the browser's back button can restore this page as it was left: reset it
+  addEventListener('pageshow', e => {
+    if (!e.persisted) return;
+    visiting = false;
+    document.body.classList.remove('leaving');
+    princess.classList.remove('gone');
+    princess.style.transform = '';
+    if (!document.body.classList.contains('night')) windows.forEach(w => w.classList.remove('lit'));
+  });
 
   // birds: a little flock flutters around where you tapped, then flies away
   const birdsG = document.getElementById('birds');
@@ -984,7 +977,8 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
     turnName.textContent = KIDS[turnIdx].name;
     turnBadge.style.setProperty('--kid', KIDS[turnIdx].color);
     turnRing.setAttribute('stroke-dashoffset', 0);
-    turnTotal = turnLeft = Math.round(rand(120, 180));
+    turnTotal = turnLeft = Math.round(rand(180, 300));
+    turnRing.parentNode.style.display = solo === null ? '' : 'none';
     warned = false;
   }
   function switchTurn() {
@@ -997,13 +991,17 @@ body.night #headlight{fill:var(--glow);filter:url(#glow)}
     say(`Time to switch! ${kid()}'s turn!`);
   }
   setInterval(() => {
-    if (!turnStarted || document.hidden) return;
+    if (!turnStarted || document.hidden || solo !== null) return;
     turnLeft--;
     turnRing.setAttribute('stroke-dashoffset', (100 * (1 - turnLeft / turnTotal)).toFixed(1));
     if (turnLeft === 15 && !warned) { warned = true; say(`Almost time, ${kid()}!`); }
     if (turnLeft <= 0) switchTurn();
   }, 1000);
   showTurn();
+  // grown-ups: hold the name badge for 2 seconds to choose who plays on this device
+  import('./shared/players.js').then(m => m.addParentHold(turnBadge, choice => {
+    location.href = 'index.html?turn=' + (choice === null ? turnIdx : choice);
+  })).catch(() => {});
 
   setColor(0);
 })();

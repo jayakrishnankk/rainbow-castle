@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**Rainbow Castle Adventures**: a static, browser-only interactive storybook for two siblings, Avni (6) and Ansh (4), deployed to GitHub Pages. It should feel like a playable storybook, a toy box and a discovery world, never like a test or a reward machine. The universe grows world by world, and the content grows with the children.
+**Rainbow Castle Adventures**: a static, browser-only interactive storybook for two siblings, Avni (6, a girl, she/her) and Ansh (4, a boy, he/him), deployed to GitHub Pages. It should feel like a playable storybook, a toy box and a discovery world, never like a test or a reward machine. The universe grows world by world, and the content grows with the children.
 
-Current content: **Rainbow Castle** (`index.html`), a single-screen scene. Build only the world, room or activity the user explicitly requests next; future ideas stay ideas until asked for.
+Current content: **Rainbow Castle** (`index.html`), a single-screen scene, and its first room, the **Swimming Pool** (`worlds/castle/pool/`), reached through the castle door. The pool follows the children's swim-school levels (White, Red, Yellow built; Blue and Green later): each skill is a short scripted scene in `skills.js`, `pool.js` runs it and draws the room, `swimmer.js` draws the posable swimmers. Carsi is the swim teacher and Avni and Ansh are her students: in each skill Carsi demonstrates, then the playing child copies the move with their own swimmer. Build only the world, room or activity the user explicitly requests next; future ideas stay ideas until asked for.
 
 ## Commands
 
@@ -26,15 +26,19 @@ Navigation model: **World → Room → Activity** (for example Rainbow Castle �
 - **`assets/`** holds local images, sounds and fonts (`assets/images/`, `assets/sounds/`). Prefer local over CDN. Story text and dialogue lines that several rooms share go in `data/` as JSON once that need appears.
 - **Rainbow Castle is the exception** for now: its HTML, CSS and JS are all inline in `index.html` (about 1,000 lines). It works and must keep working. Migrating it into `worlds/castle/` and `shared/` is a planned refactor; do it deliberately, as its own change, never as a side effect of a new feature. Moving it changes its URL, so update README.md when it happens.
 - **Root `index.html`** is currently the game. When a second world or a hub is added, the root becomes the world picker and Rainbow Castle moves into `worlds/castle/`.
-- The empty `rooms/` placeholder predates the `worlds/` layout; remove it when the first world folder is created.
+- Shared modules so far: `shared/audio.js` (synth sounds, mute), `shared/speech.js` (speech with the iOS unlock), `shared/particles.js` (canvas sparkles, drops, bubbles), `shared/turns.js` (the two kids; the turn travels between pages as `?turn=0|1`; the players setting), `shared/players.js` (the parent-only panel, opened by holding the name badge/cards for 2 s, that picks both children or only one on this device). Rainbow Castle still has its own inline copies until the castle refactor.
+- **Saved state** (`localStorage`, every access in try/catch; pages must work without it; nothing leaves the device):
+  - `rainbowCastle.pool.v2`: each child's own cap level and tokens, `{ kids: [{ level, tokens }, { level, tokens }] }` (index 0 Avni, 1 Ansh). The old shared `v1` key is removed on load.
+  - `rainbowCastle.players.v1`: `'0'` or `'1'` when a parent chose "only Avni" or "only Ansh" for this device (each child on their own device); absent means both take turns. In solo mode that child always plays and there is no turn timer. The castle's inline script reads this key directly.
 - `.nojekyll` stops GitHub Pages from running Jekyll, so files and folders with leading underscores are served. Keep it.
 
 ## Non-negotiable rules
 
 - No frameworks, no build tools, no server-side code, no backend, no accounts, no in-app purchases or ads.
 - **Discovery is the reward.** No scores, streaks, leaderboards, rankings, badges-for-counts or competitive rewards. No failure states: nothing to lose, no game-over, no lost progress, no "wrong". An unexpected action gets playful redirection ("That didn't work yet. Let's try another idea.").
-- A timer is only acceptable for teaching turn-taking (the existing sibling-turn timer is the model); never a timer that pressures.
-- **Process praise only.** Name what the child did: effort, persistence, curiosity, noticing, experimenting, practising ("You kept trying different colours.", "You noticed something new.", "You found another way."). Outcome or ability praise ("Good job", "Perfect", "You're smart", "You won", "You're the best") breaks this rule. Rainbow Castle's princess currently says "you are wonderful" (`index.html`, `HELLOS`); change it to process phrasing when that file is next touched.
+- **Skill tokens (approved by the user for the pool):** each skill a child learns gives that child one token showing that skill's picture, placed on its spot in their path and on their own card at the top (Avni left, Ansh right, side by side). Allowed because there is no count or total, nothing marks who is ahead or names a winner, tokens are never lost, and every learned skill stays replayable. Don't add tallies, stars-per-skill or a "collected X of Y" anywhere.
+- A timer is only acceptable for teaching turn-taking (the sibling-turn timer is the model: a random 3–5 minutes per turn in the castle and the pool, paused while the page is hidden, and in the pool a running skill always finishes before the turn passes); never a timer that pressures.
+- **Process praise only.** Name what the child did: effort, persistence, curiosity, noticing, experimenting, practising ("You kept trying different colours.", "You noticed something new.", "You found another way."). Outcome or ability praise ("Good job", "Perfect", "You're smart", "You won", "You're the best") breaks this rule.
 - Audio must be optional and every sound must have a visual counterpart.
 - Accessibility: touch targets large enough for small fingers, keyboard support on desktop, `aria-label`s on interactive elements, colour choices that do not rely on red/green distinction alone, and respect `prefers-reduced-motion` (the existing CSS already does this).
 - Mobile-first. Test at phone width; iOS Safari needs speech and audio to start from a `touchend`/`click` (see the unlock logic in `index.html`), not `pointerdown`.
