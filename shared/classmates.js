@@ -1,19 +1,25 @@
-// Avni and Ansh's classmates at school, and a little SVG drawing of each one.
-// Used by the school yard (faces in the windows) and the kindergarten class (the whole class on the rug).
+// Each child's classmates at school, and a little SVG drawing of each one.
+// Used by the school yard (faces in the windows) and the kindergarten class (the class on the rug).
+// The class shown is the playing child's own: CLASSES[0] is Avni's, CLASSES[1] is Ansh's.
 // Each classmate has a favourite thing; when they help in an adding lesson, they bring that.
-// Lines about classmates use their names, never he/she.
+// Lines about classmates use their names. Rhett, KC and Trenton are boys.
 
-export const CLASSMATES = [
+const AVNI_CLASS = [
   { name: 'Millie',    skin: '#F7CBA8', hair: '#B5532E', style: 'pigtails', shirt: '#FF9BC8', fav: '🍓' },
-  { name: 'Rhett',     skin: '#E8B48A', hair: '#3B2A20', style: 'short',    shirt: '#4D96FF', fav: '🍎' },
-  { name: 'Flora',     skin: '#8D5A3B', hair: '#1E1A18', style: 'puffs',    shirt: '#6BCB77', fav: '🐞' },
-  { name: 'KC',        skin: '#F3D2B8', hair: '#E8B04B', style: 'curly',    shirt: '#FF9F1C', fav: '⭐' },
-  { name: 'Stephanie', skin: '#C68A5E', hair: '#3B2A20', style: 'bun',      shirt: '#9B5DE5', fav: '🐥' },
-  { name: 'Hailey',    skin: '#F7CBA8', hair: '#E8B04B', style: 'long',     shirt: '#FFD84D', fav: '⭐' },
-  { name: 'Vera',      skin: '#E8B48A', hair: '#7A4A2A', style: 'bob',      shirt: '#FF5A5F', fav: '🍎' },
-  { name: 'Yana',      skin: '#F3D2B8', hair: '#1E1A18', style: 'long',     shirt: '#7FD0FF', fav: '🐥' },
-  { name: 'Trenton',   skin: '#8D5A3B', hair: '#1E1A18', style: 'short',    shirt: '#C9F0C0', fav: '🐞' }
+  { name: 'Rhett',     skin: '#F3D2B8', hair: '#6B4226', style: 'short',    shirt: '#4D96FF', fav: '🍎' },
+  { name: 'Flora',     skin: '#F9D5BA', hair: '#A0703C', style: 'ponytail', shirt: '#6BCB77', fav: '🐞' },
+  { name: 'KC',        skin: '#F7CBA8', hair: '#E8B04B', style: 'curly',    shirt: '#FF9F1C', fav: '⭐' },
+  { name: 'Stephanie', skin: '#F3D2B8', hair: '#4A3020', style: 'bun',      shirt: '#9B5DE5', fav: '🐥' },
+  { name: 'Hailey',    skin: '#FADCC4', hair: '#E8B04B', style: 'long',     shirt: '#FFD84D', fav: '⭐' },
+  { name: 'Vera',      skin: '#F7CBA8', hair: '#7A4A2A', style: 'bob',      shirt: '#FF5A5F', fav: '🍎' },
+  { name: 'Yana',      skin: '#F9D5BA', hair: '#4A3020', style: 'long',     shirt: '#7FD0FF', fav: '🐥' },
+  { name: 'Trenton',   skin: '#FADCC4', hair: '#A0703C', style: 'short',    shirt: '#C9F0C0', fav: '🐞' }
 ];
+// Ansh's classmates: still to come (the rug and the windows stay empty for him until then)
+const ANSH_CLASS = [];
+
+export const CLASSES = [AVNI_CLASS, ANSH_CLASS];
+export const classOf = kidIdx => CLASSES[kidIdx] || [];
 
 const INK = '#4A3F6B';
 
@@ -23,7 +29,7 @@ function hairBack(k) {
   if (k.style === 'long') return `<path d="M12 28 Q12 8 30 8 Q48 8 48 28 L50 60 Q30 66 10 60 Z" fill="${h}"/>`;
   if (k.style === 'bob') return `<path d="M11 30 Q11 8 30 8 Q49 8 49 30 V46 Q30 50 11 46 Z" fill="${h}"/>`;
   if (k.style === 'pigtails') return `<circle cx="10" cy="30" r="7" fill="${h}"/><circle cx="50" cy="30" r="7" fill="${h}"/>`;
-  if (k.style === 'puffs') return `<circle cx="13" cy="14" r="9" fill="${h}"/><circle cx="47" cy="14" r="9" fill="${h}"/>`;
+  if (k.style === 'ponytail') return `<path d="M42 14 Q60 18 54 48 Q47 38 44 26 Z" fill="${h}"/>`;
   if (k.style === 'bun') return `<circle cx="30" cy="8" r="8" fill="${h}"/>`;
   return '';
 }

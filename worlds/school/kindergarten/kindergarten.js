@@ -23,7 +23,7 @@ import { speak, hush } from '../../../shared/speech.js';
 import { createFx } from '../../../shared/particles.js';
 import { KIDS, turnFromUrl, withTurn, soloKid } from '../../../shared/turns.js';
 import { addParentHold } from '../../../shared/players.js';
-import { CLASSMATES, kidSvg } from '../../../shared/classmates.js';
+import { classOf, kidSvg } from '../../../shared/classmates.js';
 import { SIZES, DEFAULT_SIZE, ADD_THEMES, TAKE_THEMES, noun, makeProblem, PRAISE_ADD, PRAISE_TAKE } from './lessons.js';
 
 const $ = s => document.querySelector(s);
@@ -97,23 +97,35 @@ for (let n = 1; n <= 10; n++) {
 }
 
 // ---------- the classmates on the rug ----------
+// Each child has their own class (Avni's and Ansh's), so the rug is rebuilt when the turn passes.
+// A child with no classmates listed yet gets an empty rug (hidden) and lessons without a helper.
 const classRow = $('#class');
-const mates = CLASSMATES.map((k, i) => {
-  const b = document.createElement('button');
-  b.className = 'mate';
-  b.setAttribute('aria-label', k.name);
-  b.innerHTML = kidSvg(k) + `<span class="name" aria-hidden="true">${k.name}</span>`;
-  b.addEventListener('click', () => tapMate(i));
-  classRow.appendChild(b);
-  return b;
-});
+let roster = [], mates = [];
+let nextHelper = -1;     // the next lesson's helper (-1: nobody)
+let chosen = false;      // a child picked them by tapping
+function buildClass() {
+  roster = classOf(turnIdx);
+  classRow.innerHTML = '';
+  classRow.hidden = roster.length === 0;
+  mates = roster.map((k, i) => {
+    const b = document.createElement('button');
+    b.className = 'mate';
+    b.setAttribute('aria-label', k.name);
+    b.innerHTML = kidSvg(k) + `<span class="name" aria-hidden="true">${k.name}</span>`;
+    b.addEventListener('click', () => tapMate(i));
+    classRow.appendChild(b);
+    return b;
+  });
+  nextHelper = roster.length ? Math.floor(Math.random() * roster.length) : -1;
+  chosen = false;
+}
+buildClass();
 const favTheme = k => ADD_THEMES.find(t => t.ch === k.fav) || ADD_THEMES[0];
-let nextHelper = Math.floor(Math.random() * CLASSMATES.length);   // the next lesson's helper
-let chosen = false;                                               // a child picked them by tapping
 function markHelper(i) { mates.forEach((m, k) => m.classList.toggle('helper', k === i)); }
 function everyone(cls, ms) { mates.forEach((m, k) => setTimeout(() => replay(m, cls, ms), reduced ? 0 : k * 60)); }
+function hopHelper(cls, ms) { if (mates[L.helper]) replay(mates[L.helper], cls, ms); }
 function tapMate(i) {
-  const k = CLASSMATES[i];
+  const k = roster[i];
   replay(mates[i], 'wave', 1600);
   sfx.bell(sfx.NOTES[i % 7] * 2);
   if (mode !== 'menu' || switching) return;   // during a lesson they just wave
@@ -232,7 +244,7 @@ async function startLesson(kind) {
   const helper = nextHelper;
   markHelper(helper);
   // adding: the helper brings their favourite things; taking away: the themes take turns
-  const theme = kind === 'add' && chosen ? favTheme(CLASSMATES[helper])
+  const theme = kind === 'add' && chosen ? favTheme(roster[helper])
     : (kind === 'add' ? ADD_THEMES : TAKE_THEMES)[themeNext[kind]++ % 5];
   chosen = false;
   L = { ...p, theme, helper, stage: 'intro', n: 0, counted: 0, id, pips: 0 };
@@ -252,13 +264,13 @@ async function startLesson(kind) {
     L.stage = 'add';
     writeBoard([p.a, '+', p.b], 2);
     renderActions([{ id: 'more', icon: theme.ch + '+', word: 'Add' }]);
-    replay(mates[helper], 'hop', 600);
-    sayLine(`${CLASSMATES[helper].name} brings ${p.b} more. Tap!`);
+    hopHelper('hop', 600);
+    sayLine(roster[helper] ? `${roster[helper].name} brings ${p.b} more. Tap!` : `${p.b} more are coming. Tap!`);
   } else {
     L.stage = 'take';
     writeBoard([p.a, '−', p.b], 2);
     renderActions([{ id: 'less', icon: theme.ch + '−', word: 'Away' }]);
-    replay(mates[helper], 'wave', 1600);
+    hopHelper('wave', 1600);
     sayLine(`${p.b} will ${theme.go}. Tap ${p.b === 1 ? 'one' : 'them'}!`);
   }
 }
@@ -268,7 +280,7 @@ function addOne() {
   if (!L || L.stage !== 'add' || L.n >= L.b) return;
   const i = L.a + L.n;
   putCounter(i, L.theme.ch, 'more');
-  replay(mates[L.helper], 'hop', 500);
+  hopHelper('hop', 500);
   L.n++;
   renderPips();
   sfx.bell(sfx.NOTES[Math.min(L.n, 6)]);
@@ -283,7 +295,7 @@ function takeOne(i) {
   if (i === undefined || !left.includes(i)) i = left[left.length - 1];
   const c = cells[i];
   flyAway(c.btn, L.theme);
-  replay(mates[L.helper], 'wave', 1600);
+  hopHelper('wave', 1600);
   c.gone = true;
   c.counter.className = 'counter gone';
   label(i);
@@ -417,7 +429,7 @@ function endLesson() {
   mode = 'menu';
   if (L) lastKind = L.kind;
   L = null;
-  nextHelper = (nextHelper + 1 + Math.floor(Math.random() * (CLASSMATES.length - 1))) % CLASSMATES.length;
+  if (roster.length > 1) nextHelper = (nextHelper + 1 + Math.floor(Math.random() * (roster.length - 1))) % roster.length;
   markHelper(-1);
   renderMenu();
 }
@@ -460,7 +472,11 @@ let carsiIdx = 0;
 carsi.addEventListener('click', () => {
   replay(carsi, 'point', 1000);
   sfx.twinkle();
-  if (!L) return void sayLine(CARSI_LINES[carsiIdx++ % CARSI_LINES.length]);
+  if (!L) {
+    let line = CARSI_LINES[carsiIdx++ % CARSI_LINES.length];
+    if (!roster.length && line.includes('helper')) line = CARSI_LINES[carsiIdx++ % CARSI_LINES.length];
+    return void sayLine(line);
+  }
   // during a lesson she says what to do next
   if (L.stage === 'add') sayLine(`Tap to add ${L.b - L.n} more!`);
   else if (L.stage === 'take') sayLine(`Tap ${L.b - L.n} more to ${L.theme.go}!`);
@@ -503,6 +519,7 @@ async function switchTurn() {
   history.replaceState(null, '', withTurn(location.pathname, turnIdx));
   startTurnTimer();
   renderCards();
+  buildClass();
   renderMenu();
   buildMat(me().size);
   writeBoard([]);
@@ -667,9 +684,11 @@ requestAnimationFrame(() => requestAnimationFrame(() => { fit(); $('#curtain').c
   await sleep(500);
   replay(carsi, 'point', 1000);
   await sayLine(`Hi ${kid()}! Welcome to class!`);
-  everyone('wave', 1600);
-  sfx.twinkle();
-  await sayLine('Everyone says hi!');
+  if (roster.length) {
+    everyone('wave', 1600);
+    sfx.twinkle();
+    await sayLine('Everyone says hi!');
+  }
   await sayLine("Let's add, or take away!");
   if (mode === 'menu' && !switching) showPointer(dock.querySelector('.act.next'));
 })();

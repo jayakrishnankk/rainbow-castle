@@ -64,7 +64,7 @@ Tap the road sign by the castle and Princess Carsi drives the castle car down th
 **The school yard:** the car parks by the school and Carsi says "Tap the door!".
 
 - **School door**: Carsi walks in, and you follow her to class.
-- **Windows**: tap one and classmates pop up and say hi.
+- **Windows**: tap one and the playing child's classmates pop up and say hi.
 - **Bell and clock** (top of the school) and **the car**: tap them for surprises.
 - **Castle button (top left)**: drive back home to the castle.
 
@@ -72,7 +72,7 @@ There is no turn timer in the school yard (you only pass through it); the turn c
 
 ### Kindergarten class (inside the school)
 
-**The class:** Avni and Ansh's classmates, Millie, Rhett, Flora, KC, Stephanie, Hailey, Vera, Yana and Trenton, sit on the pink rug and wave hello. Tap a classmate to say hi; Carsi tells you what they love (strawberries, apples, ladybugs, stars or chicks), and that classmate helps in the next lesson (a little ⭐ shows who). If nobody is picked, a different classmate helps each time. The helper brings the things in an adding lesson and waves things away in a taking-away lesson, and the whole class nods along as the things are counted and waves at the end.
+**The class:** each child sees their own classmates. Avni's classmates, Millie, Rhett, Flora, KC, Stephanie, Hailey, Vera, Yana and Trenton, sit on the pink rug and wave hello (Ansh's classmates are coming soon; until then his lessons run without a helper). Tap a classmate to say hi; Carsi tells you what they love (strawberries, apples, ladybugs, stars or chicks), and that classmate helps in the next lesson (a little ⭐ shows who). If nobody is picked, a different classmate helps each time. The helper brings the things in an adding lesson and waves things away in a taking-away lesson, and the whole class nods along as the things are counted and waves at the end.
 
 **What children do:** Princess Carsi is the teacher. The child picks **Add** (➕) or **Take away** (➖), and each lesson is a tiny story told with things on a counting mat:
 
