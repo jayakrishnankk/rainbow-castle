@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>Kindergarten · School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap">
+<link rel="stylesheet" href="kindergarten.css">
+</head>
+<body>
+
+<header class="top">
+  <button class="btn" id="homeBtn" aria-label="Back to the school yard">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#4A3F6B" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+      <path d="M6 34 V18 L20 8 L34 18 V34 Z" fill="#FFE08A"/>
+      <path d="M16 34 V26 H24 V34" fill="#7CC4FF"/>
+      <circle cx="20" cy="18" r="3.5" fill="#FFFDF7"/>
+    </svg>
+  </button>
+  <div class="kids" id="kids" role="status" aria-live="polite"></div>
+  <button class="btn" id="soundBtn" aria-label="Sound" aria-pressed="true">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#4A3F6B" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+      <path d="M6 16 H13 L21 9 V31 L13 24 H6 Z" fill="#FFD84D"/>
+      <g class="soundOn"><path d="M26 15 Q30 20 26 25"/><path d="M30 11 Q37 20 30 29"/></g>
+      <g class="soundOff"><path d="M27 15 L35 25 M35 15 L27 25"/></g>
+    </svg>
+  </button>
+</header>
+
+<!-- the classroom: number flags along the wall, Carsi with her words, the chalkboard, the counting mat
+     and the classmates sitting on the rug -->
+<main id="room">
+  <div id="bunting" class="bunting" aria-label="Number flags"></div>
+
+  <section class="teacher">
+    <button id="carsi" class="carsi" aria-label="Princess Carsi, the teacher">
+      <svg viewBox="0 0 120 190" aria-hidden="true">
+        <g stroke="#4A3F6B" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M34 52 Q28 98 40 112 L80 112 Q92 98 86 52 Z" fill="#7A4A2A"/>
+          <!-- pointer stick arm -->
+          <g class="stickArm">
+            <path d="M74 112 L100 88" stroke-width="12"/><path d="M74 112 L100 88" stroke="#F7CBA8" stroke-width="6"/>
+            <path d="M100 88 L114 46" stroke="#B97D48" stroke-width="5"/>
+            <circle cx="114" cy="44" r="5" fill="#FFD84D"/>
+          </g>
+          <path d="M46 112 L32 140" stroke-width="12"/><path d="M46 112 L32 140" stroke="#F7CBA8" stroke-width="6"/>
+          <path d="M22 186 Q30 128 46 104 L74 104 Q90 128 98 186 Z" fill="#A77BFF"/>
+          <path d="M46 106 L74 106 L70 84 L50 84 Z" fill="#A77BFF"/>
+          <rect x="55" y="70" width="10" height="16" fill="#F7CBA8"/>
+          <circle cx="60" cy="52" r="23" fill="#F7CBA8"/>
+          <path d="M37 50 Q38 26 60 26 Q82 26 83 50 Q72 38 60 41 Q48 38 37 50 Z" fill="#7A4A2A"/>
+          <polygon points="45,31 47,11 53,23 60,7 67,23 73,11 75,31" fill="#FFD84D"/>
+        </g>
+        <g fill="#4A3F6B" class="eyes"><circle cx="52" cy="54" r="3.4"/><circle cx="68" cy="54" r="3.4"/></g>
+        <circle cx="45" cy="62" r="5" fill="#FF9EB5" opacity=".7"/><circle cx="75" cy="62" r="5" fill="#FF9EB5" opacity=".7"/>
+        <path class="smile" d="M53 64 Q60 71 67 64" fill="none" stroke="#4A3F6B" stroke-width="3" stroke-linecap="round"/>
+        <ellipse class="mouth" cx="60" cy="67" rx="5" ry="5" fill="#B8436A"/>
+        <g fill="#FFFFFF" opacity=".8"><circle cx="48" cy="150" r="3.5"/><circle cx="62" cy="134" r="3.5"/><circle cx="76" cy="152" r="3.5"/><circle cx="60" cy="168" r="3"/></g>
+      </svg>
+    </button>
+    <div id="bubble" class="bubble" aria-live="polite"></div>
+  </section>
+
+  <button id="board" class="board" aria-label="Chalkboard"><span id="eq" class="eq"></span></button>
+
+  <div id="matWrap" class="matWrap"><div id="mat" class="mat" role="group" aria-label="Counting frames"></div></div>
+
+  <div id="class" class="class" role="group" aria-label="Classmates"></div>
+</main>
+
+<canvas id="fx"></canvas>
+<nav id="dock" class="dock" aria-label="Lessons"></nav>
+<div id="pointer" class="pointer" hidden aria-hidden="true">👇</div>
+<div id="curtain" class="curtain" aria-hidden="true"></div>
+
+<script type="module" src="kindergarten.js"></script>
+</body>
+</html>

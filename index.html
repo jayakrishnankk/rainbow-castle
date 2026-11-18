@@ -117,9 +117,13 @@ body:not(.night) .twinkle{animation:none}
 #headlight{cursor:pointer;transition:fill .6s}
 body.night #headlight{fill:var(--glow);filter:url(#glow)}
 
-#door{cursor:pointer}
-#doorLeaf{transform-box:fill-box;transform-origin:0 50%;transition:transform .5s cubic-bezier(.5,1.6,.5,1)}
-#door.open #doorLeaf{transform:scaleX(.1)}
+#door,#schoolSign{cursor:pointer}
+#door:focus-visible,#schoolSign:focus-visible{outline:4px solid #6A5ACD}
+#schoolSign .swingT{transform-box:fill-box;transform-origin:50% 100%}
+#schoolSign.wiggle .swingT{animation:signWiggle .5s ease-in-out}
+@keyframes signWiggle{30%{transform:rotate(-8deg)}70%{transform:rotate(6deg)}}
+.doorLeaf{transform-box:fill-box;transform-origin:0 50%;transition:transform .5s cubic-bezier(.5,1.6,.5,1)}
+.open .doorLeaf{transform:scaleX(.1)}
 body.leaving{opacity:0;transition:opacity .6s}
 
 /* princess */
@@ -224,6 +228,17 @@ body.leaving{opacity:0;transition:opacity .6s}
   <line x1="-3000" y1="660" x2="4000" y2="660" stroke="#FFFFFF" stroke-width="6" stroke-dasharray="34 30" opacity=".8"/>
   <g id="flowers"></g>
 
+  <!-- the road sign to school (tap it to drive there); moved in front of the car on tall screens -->
+  <g id="schoolSign" transform="translate(880 632)" tabindex="0" role="button" aria-label="Drive to school">
+    <g class="swingT" stroke="#4A3F6B" stroke-width="4" stroke-linejoin="round">
+      <rect x="-5" y="-118" width="10" height="118" fill="#B97D48"/>
+      <path d="M-52 -168 H40 L62 -142 L40 -116 H-52 Z" fill="#FFE08A"/>
+      <path d="M-38 -128 V-148 L-20 -160 L-2 -148 V-128 Z" fill="#FF9B9B" stroke-width="3"/>
+      <path d="M-24 -128 V-138 H-16 V-128" fill="#7CC4FF" stroke-width="3"/>
+      <text x="22" y="-133" text-anchor="middle" font-family="'Baloo 2',sans-serif" font-weight="700" font-size="22" fill="#4D96FF" stroke="none">123</text>
+    </g>
+  </g>
+
   <!-- the castle car (faces right, wheels on the road at y=660) -->
   <g id="car" style="transform:translateX(0px)">
     <ellipse cx="505" cy="664" rx="250" ry="10" fill="#4A3F6B" opacity=".15"/>
@@ -251,9 +266,9 @@ body.leaving{opacity:0;transition:opacity .6s}
       <path class="window" d="M485 412 V386 A16 16 0 0 1 517 386 V412 Z"/>
       <path class="window" d="M394 434 V414 A14 14 0 0 1 422 414 V434 Z"/>
 
-      <g id="door">
+      <g id="door" tabindex="0" role="button" aria-label="The castle door">
         <path d="M384 522 V486 A24 24 0 0 1 432 486 V522 Z" fill="#3A2E4F"/>
-        <g id="doorLeaf">
+        <g id="doorLeaf" class="doorLeaf">
           <path d="M384 522 V486 A24 24 0 0 1 432 486 V522 Z" fill="#B97D48"/>
           <g clip-path="url(#doorClip)" stroke-width="3" opacity=".5">
             <line x1="400" y1="450" x2="400" y2="530"/><line x1="416" y1="450" x2="416" y2="530"/>
@@ -357,7 +372,7 @@ body.leaving{opacity:0;transition:opacity .6s}
   const NOTES  = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.5, 1174.66]; // C major pentatonic, outer band lowest
   const HELLOS = [
     'Hi, {k}!', "I'm Princess Carsi!", 'Tap my magic wand, {k}!', 'Do you like my car, {k}?',
-    'Paint my castle car!', 'Tap the wheels to go!', 'Tap the door, {k}!',
+    'Paint my castle car!', 'Tap the wheels to go!', 'Tap the door, {k}!', 'Tap the sign to drive to school!',
     'Tap the sky for birdies!', 'Tap the sun for stars!', 'Tap the flowers, {k}!',
     '{k}, you keep trying new things!', 'I love you, {k}!'
   ];
@@ -456,6 +471,7 @@ body.leaving{opacity:0;transition:opacity .6s}
   const parts = [...document.querySelectorAll('.part')];
   const windows = [...document.querySelectorAll('.window')];
   const door = document.getElementById('door');
+  const schoolSign = document.getElementById('schoolSign');
   const hint = document.getElementById('hint');
   const hintText = hint.querySelector('text');
   const brushBtn = document.getElementById('brushBtn');
@@ -572,6 +588,7 @@ body.leaving{opacity:0;transition:opacity .6s}
     sceneRight = portrait ? 775 : 1000;
     svg.setAttribute('viewBox', portrait ? '235 40 540 720' : '0 0 1000 750');
     orb.setAttribute('transform', portrait ? 'translate(300 98) scale(.8)' : 'translate(120 110)');
+    schoolSign.setAttribute('transform', portrait ? 'translate(712 756) scale(.62)' : 'translate(880 632)');
     if (hintStep === 0) {
       hintText.setAttribute('x', portrait ? 275 : 107);
       hintText.setAttribute('y', portrait ? 288 : 452);
@@ -749,10 +766,20 @@ body.leaving{opacity:0;transition:opacity .6s}
     setTimeout(() => { document.body.classList.add('leaving'); }, 3100);
     setTimeout(() => { location.href = 'worlds/castle/pool/index.html?turn=' + turnIdx; }, 3700);
   }
+  // keyboard: Enter or Space on the focused door or school sign
+  [[door, () => toggleDoor()], [schoolSign, () => driveCar(true)]].forEach(([el, go]) => el.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault(); audio(); go();
+  }));
   // coming back with the browser's back button can restore this page as it was left: reset it
   addEventListener('pageshow', e => {
     if (!e.persisted) return;
     visiting = false;
+    if (toSchool) {
+      toSchool = false; drivePhase = 0; clearInterval(trailTimer);
+      car.classList.remove('driving');
+      car.style.transition = 'none'; car.style.transform = 'translateX(0px)';
+    }
     document.body.classList.remove('leaving');
     princess.classList.remove('gone');
     princess.style.transform = '';
@@ -844,18 +871,24 @@ body.leaving{opacity:0;transition:opacity .6s}
     chat(words, 0.8, 2500);
   }
 
-  // drive off one side and come back around the other
-  let drivePhase = 0, trailTimer = 0;
+  // drive off one side and come back around the other; or, from the school sign, drive off to school
+  // (worlds/school/, where the car arrives from the left) with the turn in the URL
+  let drivePhase = 0, trailTimer = 0, toSchool = false;
   function horn() {
     voice(659.25, { dur: 0.18, vol: 0.25, type: 'triangle' });
     voice(783.99, { dur: 0.22, vol: 0.25, type: 'triangle', when: 0.2 });
   }
-  function driveCar() {
+  function driveCar(school = false) {
     if (drivePhase || visiting) return;
     drivePhase = 1;
+    toSchool = school;
+    if (school) {
+      visiting = true;
+      schoolSign.classList.remove('wiggle'); void schoolSign.getBoundingClientRect(); schoolSign.classList.add('wiggle');
+    }
     car.classList.add('driving');
     horn();
-    say('Here we go!');
+    say(school ? `Off to school, ${kid()}!` : 'Here we go!');
     setTimeout(() => {
       car.style.transition = 'transform 1.5s cubic-bezier(.5,0,.9,.6)';
       car.style.transform = 'translateX(1150px)';
@@ -869,7 +902,10 @@ body.leaving{opacity:0;transition:opacity .6s}
   }
   car.addEventListener('transitionend', e => {
     if (e.target !== car || e.propertyName !== 'transform') return;
-    if (drivePhase === 1) {
+    if (drivePhase === 1 && toSchool) {
+      document.body.classList.add('leaving');
+      setTimeout(() => { location.href = 'worlds/school/index.html?turn=' + turnIdx; }, 600);
+    } else if (drivePhase === 1) {
       drivePhase = 2;
       car.style.transition = 'none';
       car.style.transform = 'translateX(-1150px)';
@@ -940,6 +976,7 @@ body.leaving{opacity:0;transition:opacity .6s}
     if (target.closest('.wheelSpin') || target.closest('#headlight')) return driveCar();
     const w = target.closest('.window'); if (w) return toggleWindow(w, x, y);
     if (target.closest('#door')) return toggleDoor();
+    if (target.closest('#schoolSign')) return driveCar(true);
     if (target.closest('#orb')) return toggleNight();
     const cloud = target.closest('.cloud'); if (cloud) return cloudRain(cloud, x, y);
     if (target.classList.contains('sky')) { const p = toSvg(x, y); addBirds(p.x, p.y); }

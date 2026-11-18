@@ -1,0 +1,253 @@
+:root{
+  --ink:#4A3F6B;
+  --btn:#FFFDF7;
+  --wall:#FFF4D6;
+  --floor:#FFE3B8;
+  --dock:128px;
+  --top:94px;
+  --cell:60px;
+  --font:"Baloo 2","Arial Rounded MT Bold","Comic Sans MS",system-ui,sans-serif;
+  color-scheme: light;
+}
+html,body{height:100%}
+body{
+  margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
+  background:
+    radial-gradient(circle at 12% 30%,#FFE9A8 0 3px,transparent 4px) 0 0/46px 46px,
+    linear-gradient(var(--wall),#FFEFC7);
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+}
+button{font-family:inherit;color:inherit}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+
+/* ---------- top bar (same as the pool) ---------- */
+.top{
+  position:fixed;z-index:6;left:0;right:0;top:0;pointer-events:none;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) calc(env(safe-area-inset-right,0px) + 16px) 0 calc(env(safe-area-inset-left,0px) + 16px);
+}
+.btn{
+  pointer-events:auto;width:64px;height:64px;border-radius:50%;padding:0;cursor:pointer;
+  border:4px solid var(--ink);background:var(--btn);
+  display:grid;place-items:center;box-shadow:0 6px 0 var(--ink);
+  transition:transform .1s, box-shadow .1s;
+}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+.btn svg{width:36px;height:36px}
+#soundBtn .soundOff{display:none}
+#soundBtn[aria-pressed="false"] .soundOn{display:none}
+#soundBtn[aria-pressed="false"] .soundOff{display:inline}
+:is(.btn,.act,.size,.flag,.carsi,.board,.cell,.mate):focus-visible{outline:4px solid #6A5ACD;outline-offset:3px}
+
+/* the children's cards: Avni left, Ansh right; the bar under the playing child's card is the turn timer */
+.kids{display:flex;gap:8px;min-width:0}
+.kidCard{
+  position:relative;display:flex;align-items:center;gap:4px;padding:8px 14px 11px;
+  background:var(--btn);border:4px solid var(--ink);border-radius:20px;box-shadow:0 5px 0 var(--ink);
+  overflow:hidden;transition:background .4s;
+  font-weight:700;font-size:24px;line-height:1;
+}
+.kidCard.on{background:var(--kid)}
+.time{position:absolute;left:0;bottom:0;height:5px;width:100%;background:var(--ink);opacity:.55;
+  transform-origin:0 50%;transform:scaleX(var(--left,1));transition:transform 1s linear}
+.kidCard.pop{animation:pop .7s cubic-bezier(.3,1.8,.5,1)}
+@keyframes pop{0%{transform:scale(.4)}100%{transform:scale(1)}}
+
+/* ---------- the room ---------- */
+#room{
+  position:fixed;left:0;right:0;
+  top:calc(env(safe-area-inset-top,0px) + var(--top));
+  bottom:calc(var(--dock) + env(safe-area-inset-bottom,0px));
+  padding:0 calc(env(safe-area-inset-right,0px) + 16px) 10px calc(env(safe-area-inset-left,0px) + 16px);
+  display:grid;gap:8px;
+  grid-template-columns:1fr;
+  grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  grid-template-areas:"bunting" "teacher" "board" "mat" "class";
+}
+@media (min-width:760px){
+  #room{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"bunting bunting" "teacher board" "mat mat" "class class";column-gap:20px}
+}
+/* short wide screens (laptops): the rug sits between Carsi and the board so the mat keeps its height */
+@media (min-width:760px) and (max-height:760px){
+  #room{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) auto;grid-template-rows:auto auto minmax(0,1fr);
+    grid-template-areas:"bunting bunting bunting" "teacher class board" "mat mat mat"}
+  .class{align-self:center}
+  .mate .name{font-size:11px}
+}
+/* phones on their side: Carsi on the left, board and mat on the right */
+@media (orientation:landscape) and (max-height:540px){
+  :root{--top:84px}
+  #room{grid-template-columns:minmax(150px,30%) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;
+    grid-template-areas:"teacher board" "teacher mat" "class mat"}
+  .class{flex-wrap:wrap;border-radius:24px}
+  .bunting{display:none!important}
+  .teacher{flex-direction:column;align-items:center;justify-content:flex-start}
+}
+
+/* number flags 1 to 10 along the wall: tap one to hear it */
+.bunting{grid-area:bunting;display:flex;justify-content:center;gap:4px;
+  background:linear-gradient(var(--ink),var(--ink)) 0 3px/100% 3px no-repeat}
+.flag{
+  flex:0 1 46px;min-width:30px;height:46px;padding:4px 0 0;border:0;cursor:pointer;
+  background:var(--c);clip-path:polygon(0 0,100% 0,100% 72%,50% 100%,0 72%);
+  font-weight:700;font-size:20px;line-height:1;align-self:start;
+  transform-origin:50% 0;
+}
+.flag.swing{animation:swing .8s ease-in-out}
+@keyframes swing{25%{transform:rotate(14deg)}75%{transform:rotate(-10deg)}}
+
+/* Carsi and her words */
+.teacher{grid-area:teacher;display:flex;align-items:center;gap:10px;min-width:0}
+.carsi{flex:none;width:96px;height:150px;padding:0;border:0;background:none;cursor:pointer}
+.carsi svg{width:100%;height:100%;overflow:visible}
+.carsi .mouth{opacity:0;transform-box:fill-box;transform-origin:center}
+.carsi.talking .smile{opacity:0}
+.carsi.talking .mouth{opacity:1;animation:chatter .16s ease-in-out infinite alternate}
+@keyframes chatter{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+.carsi .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.stickArm{transform-box:fill-box;transform-origin:0 100%}
+.carsi.point .stickArm{animation:point .5s ease-in-out 2 alternate}
+@keyframes point{to{transform:rotate(-16deg)}}
+.carsi.hop{animation:hop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes hop{50%{transform:translateY(-16px)}}
+
+.bubble{
+  position:relative;flex:1 1 auto;min-width:0;max-width:520px;min-height:1.2em;
+  padding:10px 20px;background:#FFFFFF;border:4px solid var(--ink);border-radius:26px;
+  font-weight:700;font-size:26px;line-height:1.15;text-align:center;
+  opacity:0;transform:scale(.7);transition:opacity .2s, transform .25s cubic-bezier(.3,1.6,.5,1);
+}
+.bubble.show{opacity:1;transform:scale(1)}
+.bubble::before{content:"";position:absolute;left:-16px;top:50%;margin-top:-10px;
+  border:10px solid transparent;border-right:14px solid var(--ink);border-left:0}
+@media (orientation:landscape) and (max-height:540px){
+  .bubble{font-size:20px;padding:6px 12px;width:100%}.bubble::before{display:none}
+  .carsi{width:70px;height:110px}
+}
+
+/* the chalkboard with the number sentence */
+.board{
+  grid-area:board;justify-self:center;align-self:center;min-width:220px;min-height:84px;
+  padding:6px 26px;cursor:pointer;
+  background:#2F5249;border:10px solid #B97D48;border-radius:14px;box-shadow:0 6px 0 var(--ink),inset 0 0 0 3px #00000022;
+  color:#FFFDF7;display:grid;place-items:center;
+}
+.eq{display:flex;align-items:center;gap:12px;font-weight:700;font-size:54px;line-height:1;white-space:nowrap}
+.eq .op{color:#FFE66D}
+.eq .n1{color:#FFC2DD}
+.eq .n2{color:#B8DCFF}
+.eq .ans{min-width:1.1em;padding:0 6px;border:4px dashed #FFFDF799;border-radius:12px;text-align:center;color:#FFE66D}
+.eq .ans.done{border-style:solid;border-color:#FFE66D}
+.eq .ans.tick{animation:pop .4s cubic-bezier(.3,1.8,.5,1)}
+.eq .pop{animation:pop .5s cubic-bezier(.3,1.8,.5,1)}
+.board .doodle{position:absolute;pointer-events:none}
+@media (max-width:480px){.eq{font-size:42px;gap:8px}.board{min-height:70px;padding:4px 18px}}
+
+/* ---------- the counting mat: ten-frames, rows of five ---------- */
+.matWrap{grid-area:mat;min-height:0;display:grid;place-items:center}
+.mat{display:flex;gap:calc(var(--cell) * .35);align-items:center;justify-content:center}
+.mat.stack{flex-direction:column;gap:calc(var(--cell) * .2)}
+.frame{
+  display:grid;grid-template-columns:repeat(5,var(--cell));gap:4px;padding:6px;
+  background:#FFFDF7;border:4px solid var(--ink);border-radius:16px;box-shadow:0 5px 0 var(--ink);
+}
+.cell{
+  position:relative;width:var(--cell);height:var(--cell);padding:0;border:3px solid #E6D3F2;border-radius:12px;
+  background:#FFFFFF;cursor:pointer;display:grid;place-items:center;
+}
+.counter{
+  position:relative;font-size:calc(var(--cell) * .6);line-height:1;pointer-events:none;
+  width:86%;height:86%;border-radius:50%;display:grid;place-items:center;
+  animation:drop .45s cubic-bezier(.3,1.5,.5,1);
+}
+@keyframes drop{0%{transform:translateY(-60%) scale(.3);opacity:0}100%{transform:none;opacity:1}}
+/* the first group and the ones that came (pink and blue, plus the dashed ring, so not by colour alone) */
+.counter.first{background:#FFD6E8}
+.counter.more{background:#CDE7FF;box-shadow:inset 0 0 0 3px #4D96FF}
+/* a counted one shows its number */
+.counter[data-n]::after{
+  content:attr(data-n);position:absolute;right:-4px;top:-6px;min-width:1.4em;padding:2px 3px;
+  font-size:max(14px,calc(var(--cell) * .3));font-family:var(--font);font-weight:700;line-height:1;
+  background:#FFE66D;color:var(--ink);border:3px solid var(--ink);border-radius:999px;
+  animation:pop .35s cubic-bezier(.3,1.8,.5,1);
+}
+/* one that left stays as a dashed ghost, so you can still see what was taken away */
+.counter.gone{opacity:.22;filter:grayscale(1);background:none;box-shadow:inset 0 0 0 3px var(--ink);border-radius:50%;animation:none}
+.counter.gone::after{display:none}
+.counter.wiggle{animation:wiggle .5s ease-in-out}
+@keyframes wiggle{25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+/* the leaving counter flies off as a copy (see kindergarten.js) */
+.leaver{position:fixed;z-index:7;pointer-events:none;line-height:1;transform:translate(-50%,-50%);
+  transition:transform .9s cubic-bezier(.4,0,.7,1), opacity .9s}
+
+/* ---------- the classmates sitting on the rug ---------- */
+.class{grid-area:class;display:flex;justify-content:center;align-items:flex-end;gap:4px;min-width:0;
+  padding:4px 14px 2px;background:#FFD6E8;border:4px solid var(--ink);border-radius:999px}
+.mate{position:relative;flex:0 1 62px;min-width:0;padding:0;border:0;background:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;font-weight:700}
+.mate svg{display:block;width:100%;max-width:52px;aspect-ratio:60/84;height:auto;overflow:visible}
+.mate .name{font-size:13px;line-height:1.1;white-space:nowrap}
+.mate .arm{transform-box:fill-box;transform-origin:0 0}
+.mate.wave .arm{animation:wave 1.6s ease-in-out}
+@keyframes wave{0%,100%{transform:none}20%,60%{transform:rotate(-150deg)}40%,80%{transform:rotate(-115deg)}}
+.mate.hop svg{animation:hop .5s cubic-bezier(.3,1.6,.5,1)}
+.mate.nod svg{animation:nod .4s ease-out}
+@keyframes nod{40%{transform:translateY(-5px)}}
+/* this lesson's helper (or the friend picked for the next one) wears a star */
+.mate.helper::before{content:"⭐";position:absolute;top:-14px;font-size:18px;line-height:1}
+@media (max-width:480px){.mate .name{display:none}.class{padding:4px 8px 0;gap:2px}}
+
+/* ---------- the dock: lessons, or the lesson's big button ---------- */
+.dock{
+  position:fixed;z-index:6;left:0;right:0;bottom:0;
+  height:var(--dock);padding-bottom:env(safe-area-inset-bottom,0px);
+  background:var(--floor);border-top:4px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;gap:14px;
+}
+.act,.size{
+  position:relative;flex:none;border:4px solid var(--ink);padding:0;cursor:pointer;background:var(--btn);
+  display:grid;place-items:center;align-content:center;box-shadow:0 5px 0 var(--ink);
+  transition:transform .1s, box-shadow .1s, opacity .3s;
+}
+.act:active,.size:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.act{width:108px;height:96px;border-radius:28px;font-size:40px}
+.act .ico{line-height:1;white-space:nowrap}
+.act .word{font-size:17px;line-height:1;margin-top:4px}
+.act.main,.act.next{animation:glow 1.4s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 5px 0 var(--ink),0 0 0 0 #FFE66D}50%{box-shadow:0 5px 0 var(--ink),0 0 0 10px #FFE66D}}
+.act.small{width:64px;height:64px;border-radius:50%;font-size:28px}
+.dock .gap{flex:0 0 4px}
+.dock.busy .act:not(.small){opacity:.35;pointer-events:none;animation:none}
+/* how big the numbers get: a little picture of 5, 10 or 20 dots */
+.size{width:80px;height:80px;border-radius:22px;gap:2px}
+.size .dots{display:grid;grid-template-columns:repeat(5,9px);gap:3px}
+.size .dots i{width:9px;height:9px;border-radius:50%;background:var(--ink)}
+.size .word{font-size:20px;line-height:1}
+/* the pips that fill as things come or go */
+.pips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:180px}
+.pips i{width:20px;height:20px;border-radius:50%;border:3px solid var(--ink);background:#FFFFFF;transition:background .25s, transform .25s}
+.pips i.on{background:#7FD0FF;transform:scale(1.15)}
+
+@media (max-width:480px){
+  :root{--dock:112px;--top:86px}
+  .dock{gap:9px}
+  .act{width:92px;height:84px;font-size:34px}
+  .act.small{width:54px;height:54px}
+  .size{width:68px;height:68px}
+  .btn{width:56px;height:56px}.btn svg{width:30px;height:30px}
+  .kidCard{padding:6px 10px 9px;border-width:3px;font-size:20px}
+  .bubble{font-size:21px;padding:8px 14px}
+  .carsi{width:76px;height:118px}
+  .pips{max-width:120px;gap:4px}.pips i{width:16px;height:16px}
+}
+
+.pointer{position:fixed;z-index:7;font-size:48px;pointer-events:none;margin:-4px 0 0 -18px;animation:bob 1s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.curtain{position:fixed;inset:0;z-index:9;background:var(--wall);opacity:1;pointer-events:none;transition:opacity .6s}
+.curtain.open{opacity:0}
+
+@media (prefers-reduced-motion: reduce){
+  .pointer,.act.main,.act.next,.carsi .eyes,.counter,.mate svg,.mate .arm{animation:none}
+  .leaver{transition-duration:.3s}
+}

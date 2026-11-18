@@ -22,12 +22,13 @@ How to play:
 - **Castle car**: tap a part of the car to paint it. Drag across the rainbow to sweep through colours.
 - **Princess Carsi**: tap her to hear what she says. Tap her magic wand to cast a spell.
 - **Castle door**: tap it to follow Princess Carsi inside to the swimming pool.
+- **Road sign with the little school** (right of the car): tap it and Princess Carsi drives to school.
 - **Sun / moon**: tap to switch between day and night.
 - **Sky, clouds, flowers, stars and windows**: tap to discover what happens.
 - **Buttons (top right)**: next colour, rainbow magic (paints everything), start over.
 - **Two players**: the name badge at the top shows whose turn it is. Each turn lasts a random 3 to 5 minutes. (Grown-ups can set one child per device, see below.)
 
-Keyboard: Tab moves between the three buttons, and Enter or Space presses them. The rest of the scene is touch and mouse only at present.
+Keyboard: Tab moves between the three buttons, the door and the school sign, and Enter or Space presses them. The rest of the scene is touch and mouse only at present.
 
 ### Swimming Pool (inside Rainbow Castle)
 
@@ -56,9 +57,50 @@ How to play:
 
 Keyboard: Tab moves between all the buttons, and Enter or Space presses them.
 
+### School
+
+Tap the road sign by the castle and Princess Carsi drives the castle car down the road to school.
+
+**The school yard:** the car parks by the school and Carsi says "Tap the door!".
+
+- **School door**: Carsi walks in, and you follow her to class.
+- **Windows**: tap one and classmates pop up and say hi.
+- **Bell and clock** (top of the school) and **the car**: tap them for surprises.
+- **Castle button (top left)**: drive back home to the castle.
+
+There is no turn timer in the school yard (you only pass through it); the turn carries on in the class.
+
+### Kindergarten class (inside the school)
+
+**The class:** Avni and Ansh's classmates, Millie, Rhett, Flora, KC, Stephanie, Hailey, Vera, Yana and Trenton, sit on the pink rug and wave hello. Tap a classmate to say hi; Carsi tells you what they love (strawberries, apples, ladybugs, stars or chicks), and that classmate helps in the next lesson (a little ⭐ shows who). If nobody is picked, a different classmate helps each time. The helper brings the things in an adding lesson and waves things away in a taking-away lesson, and the whole class nods along as the things are counted and waves at the end.
+
+**What children do:** Princess Carsi is the teacher. The child picks **Add** (➕) or **Take away** (➖), and each lesson is a tiny story told with things on a counting mat:
+
+- **Adding**: "Here are 8 apples." Then "Flora brings 5 more. Tap!": each tap drops one more apple onto the mat. Then everyone counts them, tapping each apple as it is counted, and the chalkboard fills in 8 + 5 = 13.
+- **Taking away**: "Here are 12 balloons." Then "4 will float away. Tap them!": the tapped balloons float off (birds fly, frogs hop, bubbles pop, cookies get munched). A dashed outline stays where each one was, so the child can see what went. Then they count what is left: 12 − 4 = 8.
+
+Things sit in **ten-frames** (rows of five), the same as in a classroom, so a child starts to see "a full ten and 3 more" without counting every one.
+
+**How big the numbers get:** the dotted button at the left of the bottom bar switches between **up to 5**, **up to 10** and **up to 20**. Each child has their own setting (Ansh starts at 5 and Avni at 20; tap it to change). Up to 20 adds a grown-up counting trick: adding **counts on** from the first number ("We know 15. 16, 17!") and taking away **counts back** as each one leaves ("11, 10, 9").
+
+There is no question to answer and nothing can go wrong: every tap moves the story on, and Carsi names what the child did ("you touched each one as you counted!"). Tapping something already counted gets "We counted that one! Find another."
+
+**What they practise:** classmates' names and what they like, counting one by one (touching each thing once), adding as "more coming" and taking away as "some leaving", reading the number sentence on the board (+, −, =), seeing numbers in fives and tens, counting on and counting back up to 20, and taking turns with a sibling.
+
+How to play:
+
+- **Bottom bar**: the dotted size button, then **Add** or **Take away**. During a lesson, the big button does the next step (or tap the things on the mat), and ↩ stops and goes back.
+- **Number flags (1 to 10)**: tap one to hear the number and see that many stars.
+- **Chalkboard**: tap it to hear the sum read out. **Princess Carsi**: tap her to hear what to do next.
+- **Classmates on the rug**: tap one to say hi and pick the next helper.
+- **School button (top left)**: back out to the school yard.
+- **Taking turns** and **one child per device** work the same as in the swimming pool. The size each child chose is kept on this device.
+
+Keyboard: Tab moves between all the buttons, and Enter or Space presses them.
+
 ## How the game is organised
 
-The game is a set of **worlds** (Rainbow Castle first; others may follow). Each world has **rooms**, and each room has a few short **activities**. New rooms are added one at a time, and each gets its own section above saying what children do there and what they practise.
+The game is a set of **worlds** (Rainbow Castle and the School so far). Each world has **rooms**, and each room has a few short **activities**. New rooms are added one at a time, and each gets its own section above saying what children do there and what they practise.
 
 ## Design principles
 
@@ -90,7 +132,9 @@ Every push to `main` publishes the site to GitHub Pages through `.github/workflo
 ```
 index.html        Rainbow Castle (the castle outside)
 worlds/castle/pool/  The swimming pool inside the castle
-shared/           Code reused by several rooms (speech, sounds, sparkles, turns)
+worlds/school/    The school yard (Carsi drives here from the castle)
+worlds/school/kindergarten/  The kindergarten class (adding and taking away, with classmates)
+shared/           Code reused by several rooms (speech, sounds, sparkles, turns, classmates)
 assets/           Local images, sounds and fonts
 .github/          Deployment workflow
 CLAUDE.md         Instructions for the AI coding assistant
